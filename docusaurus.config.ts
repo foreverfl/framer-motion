@@ -27,7 +27,16 @@ const config: Config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: "ko",
-    locales: ["ko"],
+    locales: ["ko", "ja"],
+    localeConfigs: {
+      ko: {
+        label: "한국어",
+      },
+      ja: {
+        label: "日本語",
+      },
+    },
+    path: "i18n",
   },
 
   presets: [
@@ -76,13 +85,12 @@ const config: Config = {
         {
           type: "docSidebar",
           to: "/docs",
-          sidebarId: "tutorialSidebar",
+          sidebarId: "sidebar",
           position: "left",
           label: "Docs",
         },
         {
-          href: "https://github.com/facebook/docusaurus",
-          label: "GitHub",
+          type: "localeDropdown",
           position: "right",
         },
       ],

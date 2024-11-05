@@ -1,0 +1,46 @@
+{
+  "sidebar.sidebar.category.시작하기": {
+    "message": "開始",
+    "description": "The label for the category '시작하기' in the sidebar"
+  },
+  "sidebar.sidebar.category.애니메이션": {
+    "message": "アニメーション",
+    "description": "The label for the category '애니메이션' in the sidebar"
+  },
+  "sidebar.sidebar.category.컴포넌트": {
+    "message": "コンポーネント",
+    "description": "The label for the category '컴포넌트' in the sidebar"
+  },
+  "sidebar.sidebar.category.Motion Values": {
+    "message": "モーション値",
+    "description": "The label for the category 'Motion Values' in the sidebar"
+  },
+  "sidebar.sidebar.category.Hooks": {
+    "message": "フック",
+    "description": "The label for the category 'Hooks' in the sidebar"
+  },
+  "sidebar.sidebar.category.범용 기능": {
+    "message": "汎用機能",
+    "description": "The label for the category '범용 기능' in the sidebar"
+  },
+  "sidebar.sidebar.category.3D": {
+    "message": "3D",
+    "description": "The label for the category '3D' in the sidebar"
+  },
+  "sidebar.sidebar.category.가이드": {
+    "message": "ガイド",
+    "description": "The label for the category '가이드' in the sidebar"
+  },
+  "sidebar.sidebar.category.커뮤니티": {
+    "message": "コミュニティ",
+    "description": "The label for the category '커뮤니티' in the sidebar"
+  },
+  "sidebar.sidebar.link.GitHub": {
+    "message": "GitHub",
+    "description": "The label for the GitHub link in the sidebar"
+  },
+  "sidebar.sidebar.link.Discord": {
+    "message": "Discord",
+    "description": "The label for the Discord link in the sidebar"
+  }
+}

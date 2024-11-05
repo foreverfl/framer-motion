@@ -1,7 +1,7 @@
 import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
 const sidebars: SidebarsConfig = {
-  tutorialSidebar: [
+  sidebar: [
     {
       type: "category",
       label: "시작하기",
@@ -57,7 +57,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Universal",
+      label: "범용 기능",
       items: [
         "universal/animate",
         "universal/scroll",
@@ -81,7 +81,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Guides",
+      label: "가이드",
       items: [
         "guides/accessibility",
         "guides/reduce-bundle-size",
@@ -90,7 +90,7 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "Community",
+      label: "커뮤니티",
       items: [
         {
           type: "link",
