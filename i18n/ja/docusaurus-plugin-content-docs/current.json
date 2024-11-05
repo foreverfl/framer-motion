@@ -1,0 +1,50 @@
+{
+  "version.label": {
+    "message": "次へ",
+    "description": "The label for version current"
+  },
+  "sidebar.koSidebar.category.시작하기": {
+    "message": "はじめに",
+    "description": "The label for category 시작하기 in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.애니메이션": {
+    "message": "アニメーション",
+    "description": "The label for category 애니메이션 in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.컴포넌트": {
+    "message": "コンポーネント",
+    "description": "The label for category 컴포넌트 in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.Motion Values": {
+    "message": "モーション値",
+    "description": "The label for category Motion Values in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.Hooks": {
+    "message": "フック",
+    "description": "The label for category Hooks in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.범용 기능": {
+    "message": "汎用機能",
+    "description": "The label for category 범용 기능 in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.3D": {
+    "message": "3D",
+    "description": "The label for category 3D in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.가이드": {
+    "message": "ガイド",
+    "description": "The label for category 가이드 in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.category.커뮤니티": {
+    "message": "コミュニティ",
+    "description": "The label for category 커뮤니티 in sidebar koSidebar"
+  },
+  "sidebar.koSidebar.link.GitHub": {
+    "message": "GitHub",
+    "description": "The label for link GitHub in sidebar koSidebar, linking to https://github.com/framer/motion"
+  },
+  "sidebar.koSidebar.link.Discord": {
+    "message": "Discord",
+    "description": "The label for link Discord in sidebar koSidebar, linking to https://www.framer.com/r/discord/"
+  }
+}

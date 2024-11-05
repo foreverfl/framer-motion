@@ -1,7 +1,7 @@
 import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
 
 const sidebars: SidebarsConfig = {
-  sidebar: [
+  koSidebar: [
     {
       type: "category",
       label: "시작하기",
