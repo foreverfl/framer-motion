@@ -34,3 +34,26 @@
 body {
   font-family: "Noto Sans KR", sans-serif;
 }
+
+.pagination-nav__link {
+  border: none;
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.footer__title {
+  display: none;
+}
+
+.footer__items {
+  display: flex;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
