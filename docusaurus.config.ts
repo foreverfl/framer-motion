@@ -6,7 +6,7 @@ import type * as Preset from "@docusaurus/preset-classic";
 
 const config: Config = {
   title: "Framer Motion",
-  favicon: "img/favicon.ico",
+  favicon: "img/framer-black-mark.svg",
 
   // Set the production url of your site here
   url: "https://framer.mogumogu.dev",
@@ -142,7 +142,7 @@ const config: Config = {
     },
     prism: {
       theme: prismThemes.github,
-      darkTheme: prismThemes.dracula,
+      darkTheme: prismThemes.oceanicNext,
     },
     colorMode: {
       defaultMode: "dark", // 다크 모드로 설정

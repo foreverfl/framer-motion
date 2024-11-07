@@ -6,17 +6,23 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "시작하기",
       items: ["getting-started/introduction", "getting-started/examples"],
+      collapsed: false,
     },
     {
       type: "category",
       label: "애니메이션",
       items: [
         "animation/overview",
-        "animation/layout",
+        {
+          type: "doc",
+          id: "animation/layout",
+          label: "레이아웃",
+        },
         "animation/gestures",
         "animation/scroll",
         "animation/transition",
       ],
+      collapsed: false,
     },
     {
       type: "category",
@@ -29,6 +35,7 @@ const sidebars: SidebarsConfig = {
         "components/motion-config",
         "components/reorder",
       ],
+      collapsed: false,
     },
     {
       type: "category",
@@ -43,6 +50,7 @@ const sidebars: SidebarsConfig = {
         "motion-values/use-transform",
         "motion-values/use-velocity",
       ],
+      collapsed: false,
     },
     {
       type: "category",
@@ -54,6 +62,7 @@ const sidebars: SidebarsConfig = {
         "hooks/use-in-view",
         "hooks/use-reduced-motion",
       ],
+      collapsed: false,
     },
     {
       type: "category",
@@ -68,6 +77,7 @@ const sidebars: SidebarsConfig = {
         "universal/frame",
         "universal/easing-functions",
       ],
+      collapsed: false,
     },
     {
       type: "category",
@@ -78,6 +88,7 @@ const sidebars: SidebarsConfig = {
         "3d/layout-orthographic-camera",
         "3d/motion-canvas",
       ],
+      collapsed: false,
     },
     {
       type: "category",
@@ -87,6 +98,7 @@ const sidebars: SidebarsConfig = {
         "guides/reduce-bundle-size",
         "guides/upgrade-guides",
       ],
+      collapsed: false,
     },
     {
       type: "category",
@@ -103,6 +115,7 @@ const sidebars: SidebarsConfig = {
           href: "https://www.framer.com/r/discord/",
         },
       ],
+      collapsed: false,
     },
   ],
 };

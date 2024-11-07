@@ -1,0 +1,183 @@
+import React from "react";
+import IFrameEmbed from "../../src/components/HomepageFeatures/IFrameEmbed";
+
+# 레이아웃 애니메이션
+
+**React와 Framer Motion을 사용하여 레이아웃 및 공유 레이아웃 애니메이션을 만들어보세요.**
+
+CSS 레이아웃은 애니메이션을 적용하기 어렵고 비용이 많이 듭니다.
+
+`height`를 `100px`에서 `500px`로 애니메이션하는 것은 개념적으로는 간단하지만, 매 애니메이션 프레임마다 브라우저의 레이아웃 시스템을 다시 계산하게 만들어 성능이 좋지 않습니다.
+
+때로는 의미가 없을 수도 있습니다. `justify-content`를 `flex-start`에서 `flex-end`로 애니메이션하는 것이 실제로 어떤 의미가 있을까요?
+
+<IFrameEmbed sandboxId="framer-motion-2-layout-animations-kij8p" />
+
+Framer Motion의 레이아웃 애니메이션을 활성화하려면 `motion` 컴포넌트에 `layout` 속성을 설정하기만 하면 됩니다.
+
+```jsx
+<motion.div layout />
+```
+
+리렌더링으로 인한 모든 레이아웃 변경이 애니메이션화됩니다. 다음과 같은 변경사항이 포함될 수 있습니다:
+
+- 리스트의 재정렬
+- 너비나 위치 등 컴포넌트 자체에 설정된 스타일 변경
+- flexbox나 grid 등 부모의 레이아웃 변경
+- 기타 컴포넌트 레이아웃의 모든 변경사항
+
+### 스케일 보정
+
+모든 레이아웃 애니메이션은 `transform` 속성을 사용하여 수행되어 부드러운 화면 전환을 제공합니다.
+
+transform을 사용한 레이아웃 애니메이션은 때때로 자식 요소를 시각적으로 왜곡할 수 있습니다. 이러한 왜곡을 보정하기 위해 요소의 첫 번째 자식 요소에도 `layout` 속성을 줄 수 있습니다.
+
+이 컴포넌트를 레이아웃을 변경하면서 사용해보세요. 핑크색 점에 `layout` 속성을 설정했을 때와 설정하지 않았을 때의 차이를 확인해보세요.
+
+<IFrameEmbed sandboxId="framer-motion-2-scale-correction-z4tgr" />
+
+transform은 또한 `boxShadow`와 `borderRadius`를 왜곡할 수 있습니다. `motion` 컴포넌트는 이러한 속성들이 motion의 값으로 설정되어 있는 한 자동으로 왜곡을 보정합니다.
+
+이러한 값들을 애니메이션하지 않는다면, `style`을 통해 설정하는 것이 가장 쉬운 방법입니다:
+
+```jsx
+<motion.div layout style={{ borderRadius: 20 }} />
+```
+
+### 레이아웃 애니메이션 커스터마이징
+
+레이아웃 애니메이션은 `transition` 속성을 사용하여 커스터마이징할 수 있습니다:
+
+```jsx
+<motion.div layout transition={{ duration: 0.3 }} />
+```
+
+레이아웃 애니메이션에만 특정 transition을 설정하고 싶다면, `layout` transition을 별도로 지정할 수 있습니다:
+
+```jsx
+<motion.div
+  layout
+  animate={{ opacity: 0.5 }}
+  transition={{
+    opacity: { ease: "linear" },
+    layout: { duration: 0.3 },
+  }}
+/>
+```
+
+### 스크롤 컨테이너 내에서의 애니메이션
+
+스크롤 가능한 요소 내에서 레이아웃을 올바르게 애니메이션하려면, 해당 요소에 `layoutScroll` 속성을 주어야 합니다:
+
+```jsx
+<motion.div layoutScroll style={{ overflow: "scroll" }} />
+```
+
+이를 통해 Framer Motion은 자식 요소를 측정할 때 이 요소의 스크롤 오프셋을 고려할 수 있습니다.
+
+### 레이아웃 애니메이션 조정하기
+
+레이아웃 애니메이션은 컴포넌트가 리렌더링되고 레이아웃이 변경되었을 때 트리거됩니다.
+
+```jsx
+function Accordion() {
+  const [isOpen, setOpen] = useState(false);
+
+  return (
+    <motion.div
+      layout
+      style={{ height: isOpen ? "100px" : "500px" }}
+      onClick={() => setOpen(!isOpen)}
+    />
+  );
+}
+```
+
+하지만 동시에 리렌더링되지 않지만 서로의 레이아웃에 영향을 미치는 두 개 이상의 컴포넌트가 있다면 어떻게 될까요?
+
+```jsx
+function List() {
+  return (
+    <>
+      <Accordion />
+      <Accordion />
+    </>
+  );
+}
+```
+
+하나가 리렌더링될 때, 다른 하나는 자신의 레이아웃 변경을 감지할 수 없습니다.
+
+[`LayoutGroup`](https://www.framer.com/developers/) 컴포넌트로 감싸서 여러 컴포넌트 간의 레이아웃 변경을 동기화할 수 있습니다:
+
+```jsx
+import { LayoutGroup } from "framer-motion";
+
+function List() {
+  return (
+    <LayoutGroup>
+      <Accordion />
+      <Accordion />
+    </LayoutGroup>
+  );
+}
+```
+
+이제 그룹화된 하나의 컴포넌트에서 레이아웃 변경이 감지되면, 추가적인 리렌더링 없이 모든 컴포넌트에서 레이아웃 애니메이션이 발생합니다.
+
+## 공유 레이아웃 애니메이션
+
+기존 컴포넌트와 일치하는 `layoutId` 속성을 가진 새로운 컴포넌트가 추가되면, 자동으로 이전 컴포넌트에서 애니메이션이 시작됩니다:
+
+```jsx
+isSelected && <motion.div layoutId="underline" />;
+```
+
+<IFrameEmbed sandboxId="framer-motion-layout-animations-snxgv" />
+
+새로운 컴포넌트가 들어올 때 이전 컴포넌트가 여전히 마운트되어 있다면, 자동으로 이전 컴포넌트에서 새 컴포넌트로 겹쳐지면서 전환됩니다.
+
+## 문제 해결
+
+#### 컴포넌트가 애니메이션되지 않는 경우
+
+- 컴포넌트가 `display: inline`으로 설정되어 있지 않은지 확인하세요. 브라우저는 이러한 요소에 `transform`을 적용하지 않습니다.
+
+#### SVG 레이아웃 애니메이션이 깨지는 경우
+
+- SVG 컴포넌트는 현재 레이아웃 애니메이션을 지원하지 않습니다. SVG는 레이아웃 시스템이 없으므로 `cx` 등의 속성을 직접 애니메이션하는 것이 좋습니다.
+
+#### skew 변형이 적용되지 않는 경우
+
+- `skew` 변형은 현재 레이아웃 애니메이션과 호환되지 않습니다.
+
+#### 콘텐츠가 원하지 않게 늘어나는 경우
+
+- 이는 scale로 너비와 높이를 애니메이션할 때의 자연스러운 부작용입니다. 서로 다른 종횡비로 변경되는 요소(주로 텍스트 요소)를 포함하는 경우, `layout="position"`을 사용하여 요소의 위치만 애니메이션하는 것이 더 나을 수 있습니다.
+
+#### border radius나 box shadow가 이상하게 동작하는 경우
+
+- `scale` 애니메이션은 성능이 좋지만 `border-radius`와 `box-shadow` 같은 일부 스타일을 왜곡할 수 있습니다.
+- Framer Motion은 자동으로 이러한 scale 왜곡을 보정하지만, 이 보정은 픽셀이나 퍼센트로 정의된 `border-radius`와 단일` box-shadow`로 제한됩니다.
+
+#### sticky 요소가 예상대로 애니메이션되지 않는 경우
+
+`position: sticky` 속성을 가진 요소는 두 가지 좌표 공간(페이지 상대 좌표와 뷰포트 상대 좌표) 사이를 전환하기 때문에 애니메이션 적용이 어렵습니다.
+
+만약 `position: sticky` 요소의 자식들이 예상대로 애니메이션되지 않는다면, 해당 요소에 `layout`과 `layoutRoot` 속성을 추가할 수 있습니다. 이렇게 하면 해당 요소에서 모든 레이아웃 계산이 수행되고, 즉각적인 레이아웃 애니메이션이 적용되어 자식 요소들은 이 요소를 기준으로 레이아웃 애니메이션을 수행하게 됩니다.
+
+```jsx
+<motion.header layout layoutRoot style={{ position: "sticky" }}>
+  <motion.h1 layout />
+</motion.header>
+```
+
+#### 주변 콘텐츠가 변경될 때 원하지 않는 레이아웃 애니메이션이 발생하는 경우
+
+- 부모에 `layout layoutRoot`를 추가하면 자식들이 부모를 기준으로 모든 레이아웃 애니메이션을 수행합니다:
+
+```jsx
+<motion.div className="switch-container" layout layoutRoot>
+  <motion.div className="switch-handle" layout />
+</motion.div>
+```
