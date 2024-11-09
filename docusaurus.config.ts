@@ -1,6 +1,7 @@
 import { themes as prismThemes } from "prism-react-renderer";
 import type { Config } from "@docusaurus/types";
 import type * as Preset from "@docusaurus/preset-classic";
+import path from "path";
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
@@ -101,10 +102,16 @@ const config: Config = {
         {
           title: "legal",
           items: [
-            { label: "Cookies", to: "/cookies" },
-            { label: "Security", to: "/security" },
-            { label: "Terms of Service", to: "/terms-of-service" },
-            { label: "Privacy Statement", to: "/privacy-statement" },
+            // { label: "Cookies", to: "/cookies" },
+            { label: "Security", to: "https://www.framer.com/legal/security/" },
+            {
+              label: "Terms of Service",
+              to: "https://www.framer.com/legal/terms-of-service/",
+            },
+            {
+              label: "Privacy Statement",
+              to: "https://www.framer.com/legal/privacy-statement/",
+            },
           ],
         },
       ],
@@ -120,6 +127,22 @@ const config: Config = {
       respectPrefersColorScheme: false, // 사용자의 OS 설정을 무시
     },
   } satisfies Preset.ThemeConfig,
+  plugins: [
+    function customWebpackPlugin() {
+      return {
+        name: "custom-webpack-alias-plugin",
+        configureWebpack() {
+          return {
+            resolve: {
+              alias: {
+                "@": path.resolve(__dirname, "src"), // Webpack alias 설정
+              },
+            },
+          };
+        },
+      };
+    },
+  ],
 };
 
 export default config;

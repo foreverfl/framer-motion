@@ -1,0 +1,153 @@
+import React from "react";
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+
+# 스크롤 애니메이션
+
+**Framer Motion에서 스크롤 연동 및 스크롤 트리거 애니메이션을 만드는 방법을 알아봅니다.**
+
+스크롤 애니메이션은 크게 두 가지 유형이 있으며, Framer Motion을 사용하여 둘 다 구현할 수 있습니다.
+
+스크롤-**연동**(Scroll-linked) 애니메이션은 애니메이션의 진행도가 스크롤 진행도와 직접적으로 연결되는 방식입니다. 스크롤-**트리거**(Scroll-triggered) 애니메이션은 요소가 뷰포트에 들어오거나 나갈 때 일반 애니메이션이 시작되는 방식입니다.
+
+## 스크롤 연동 애니메이션
+
+스크롤 연동 애니메이션은 [motion value](https://www.framer.com/developers/)와 `useScroll` 훅을 사용하여 만듭니다.
+
+```jsx
+import { motion, useScroll } from "framer-motion";
+
+function Component() {
+  const { scrollYProgress } = useScroll();
+
+  return <motion.div style={{ scaleX: scrollYProgress }} />;
+}
+```
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-xwdxbt" />
+
+[전체 useScroll 문서](https://www.framer.com/developers/)를 확인하여 요소 스크롤 추적, 뷰포트 내 요소 위치, 패럴랙스 효과 생성 등에 대해 자세히 알아보세요.
+
+## 코드 없이 만들기
+
+가장 쉬운 API는 API가 없는 것입니다. 이것이 바로 Framer Motion이 전문가용 웹 빌더인 Framer에서 스크롤 연동 애니메이션을 만드는 데 사용되는 이유입니다.
+
+스크롤 변환 기능을 사용하면 코드 없이도 몇 초 만에 애니메이션을 만들 수 있습니다.
+
+<YoutubeEmbed videoId="LqmTX8-5bLo" />
+
+[데모 사이트](https://transforms.framer.wiki/)를 복제하여 바로 시작해보세요.
+
+## 스크롤 트리거 애니메이션
+
+스크롤 트리거 애니메이션은 요소가 뷰포트에 들어오거나 나갈 때 시작되는 일반 애니메이션입니다.
+
+`whileInView` 속성을 사용하여 요소가 보일 때 애니메이션으로 전환될 속성들과 선택적으로 트랜지션을 정의할 수 있습니다.
+
+```jsx
+<motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} />
+```
+
+### 속성
+
+#### whileInView: `VariantLabels | TargetAndTransition`
+
+요소가 뷰포트 안에 있을 때 애니메이션으로 전환될 속성이나 variant 라벨입니다.
+
+```jsx
+<motion.div whileInView={{ opacity: 1 }} />
+```
+
+#### viewport: `ViewportOptions`
+
+뷰포트 감지 방식을 정의하는 [옵션](scroll-animations/##viewport-options) 객체입니다.
+
+```jsx
+<motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} />
+```
+
+#### onViewportEnter(`entry`): `void`
+
+요소가 뷰포트에 들어올 때 트리거되는 콜백입니다. 교차 이벤트에 대한 상세 정보가 담긴 [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry)를 제공합니다. 브라우저가 `IntersectionObserverEntry`를 지원하지 않는 경우 `null`이 제공됩니다.
+
+#### onViewportLeave(`entry`): `void`
+
+요소가 뷰포트를 벗어날 때 트리거되는 콜백입니다. 교차 이벤트에 대한 상세 정보가 담긴 [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserverEntry)를 제공합니다. 브라우저가 `IntersectionObserverEntry`를 지원하지 않는 경우에는 호출되지 않습니다.
+
+### 뷰포트 옵션
+
+#### once: `boolean`
+
+true로 설정하면 요소가 한 번 뷰포트에 들어온 후에는 whileInView 상태를 유지합니다. 추가적인 뷰포트 콜백은 트리거되지 않습니다.
+
+```jsx
+<motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} />
+```
+
+#### root: `RefObject<Element>`
+
+기본적으로 요소는 윈도우 뷰포트에 들어올 때 뷰포트 내에 있는 것으로 간주됩니다.
+
+상위 요소의 `ref`를 `viewport.root`에 전달하여 해당 상위 요소를 대신 뷰포트로 사용할 수 있습니다.
+
+```jsx
+function Component() {
+  const scrollRef = useRef(null);
+
+  return (
+    <div ref={scrollRef} style={{ overflow: "scroll" }}>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ root: scrollRef }}
+      />
+    </div>
+  );
+}
+```
+
+#### margin: `string`
+
+요소가 뷰포트에 들어왔는지 감지할 때 뷰포트에 추가할 여백입니다.
+
+기본값은 `"0px"`입니다. 단일 값을 사용하여 모든 면에 여백을 추가하거나(예: `"200px"`), 여러 값을 사용하여 각 축에 여백을 할당할 수 있습니다(예: `"0px -20px 0px 100px"`).
+
+#### amount: `"some" | "all" | number`
+
+요소가 뷰포트 내에 있는 것으로 간주되기 위해 교차해야 하는 요소의 양을 정의합니다. 기본값은 `"some"`입니다.
+
+### 코드 없이 만들기
+
+[Framer](https://www.framer.com/)에서는 코드 없이도 스크롤 트리거 애니메이션을 만들 수 있습니다.
+
+## 예시
+
+<IFrameEmbed sandboxId="framer-motion-whileinview-2hbg5" />
+
+- 페이지 스크롤 진행 상태
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-xwdxbt" />
+
+- 스프링 보정
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-with-spring-smoothing-75rw1l" />
+
+- 요소 스크롤 진행 상태
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-element-scrolling-eg6fm3" />
+
+- 요소 위치 추적
+
+<IFrameEmbed sandboxId="framer-motion-track-element-position-wnzctr" />
+
+- 패럴랙스
+
+<IFrameEmbed sandboxId="framer-motion-parallax-i9gwuc" />
+
+- 3D
+
+<IFrameEmbed sandboxId="framer-motion-3d-usescroll-xibe0t" />
+
+- 스크롤 속도
+
+<IFrameEmbed sandboxId="framer-motion-scroll-velocity-r1dy4u" />

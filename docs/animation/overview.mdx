@@ -1,3 +1,7 @@
+import React from "react";
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+
 # 애니메이션
 
 Framer Motion에서 애니메이션을 구현하는 방법을 알아봅시다.
@@ -14,19 +18,7 @@ Framer Motion에서는 여러 가지 방식으로 애니메이션을 구현할 �
 
 animate 내의 값이 변경되면, 컴포넌트는 자동으로 새로운 목표값으로 애니메이션됩니다.
 
-<iframe
-  src="https://codesandbox.io/embed/framer-motion-animate-on-state-update-ns67ib?fontsize=14&hidenavigation=1&theme=dark&view=preview"
-  style={{
-    width: "100%",
-    height: "500px",
-    border: "0",
-    borderRadius: "4px",
-    overflow: "hidden",
-  }}
-  title="Framer Motion Animate on State Update"
-  allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking"
-  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-/>
+<IFrameEmbed sandboxId="framer-motion-animate-on-state-update-ns67ib" />
 
 ## 트랜지션
 
@@ -41,19 +33,7 @@ animate 내의 값이 변경되면, 컴포넌트는 자동으로 새로운 목�
 />
 ```
 
-<iframe
-  src="https://codesandbox.io/embed/framer-motion-transition-prop-j9m7d2?fontsize=14&hidenavigation=1&theme=dark&view=preview"
-  style={{
-    width: "100%",
-    height: "500px",
-    border: "0",
-    borderRadius: "4px",
-    overflow: "hidden",
-  }}
-  title="Framer Motion Animate on State Update"
-  allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking"
-  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-/>
+<IFrameEmbed sandboxId="framer-motion-transition-prop-j9m7d2" />
 
 ## 진입 애니메이션
 
@@ -87,19 +67,7 @@ animate의 값을 키프레임 시리즈로 설정할 수 있습니다. 이는 �
 <motion.div animate={{ x: [0, 100, 0] }} />
 ```
 
-<iframe
-  src="https://codesandbox.io/embed/framer-motion-keyframes-0fzv21?fontsize=14&hidenavigation=1&theme=dark&view=preview"
-  style={{
-    width: "100%",
-    height: "500px",
-    border: "0",
-    borderRadius: "4px",
-    overflow: "hidden",
-  }}
-  title="Framer Motion Animate on State Update"
-  allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking"
-  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-/>
+<IFrameEmbed sandboxId="framer-motion-keyframes-0fzv21" />
 
 현재 값을 초기 키프레임으로 사용하려면 와일드카드 키프레임인 null을 전달할 수 있습니다.
 
@@ -109,19 +77,7 @@ animate의 값을 키프레임 시리즈로 설정할 수 있습니다. 이는 �
 
 이렇게 하면 값이 현재 애니메이션 중일 때 키프레임 애니메이션이 시작되면 트랜지션이 더 자연스러워집니다. 또한 코드의 중복을 줄일 수 있습니다.
 
-<iframe
-  src="https://codesandbox.io/embed/framer-motion-wildcard-keyframes-dkk0xr?fontsize=14&hidenavigation=1&theme=dark&view=preview"
-  style={{
-    width: "100%",
-    height: "500px",
-    border: "0",
-    borderRadius: "4px",
-    overflow: "hidden",
-  }}
-  title="Framer Motion Animate on State Update"
-  allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking"
-  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-/>
+<IFrameEmbed sandboxId="framer-motion-wildcard-keyframes-dkk0xr" />
 
 ```jsx
 <motion.circle cx={500} animate={{ cx: [null, 100] }} />
@@ -161,19 +117,7 @@ Framer Motion은 hover, tap, drag, focus, inView와 같은 제스처가 시작�
 
 animate를 객체로 설정하는 것은 단순한 단일 컴포넌트 애니메이션에 유용합니다. 하지만 때로는 DOM 전체에 걸쳐 전파되는 애니메이션을 만들고, 이러한 애니메이션을 선언적인 방식으로 조율하고 싶을 수 있습니다. 이는 variants를 통해 가능합니다.
 
-<iframe
-  src="https://codesandbox.io/embed/framer-motion-variants-rj7ks0?fontsize=14&hidenavigation=1&theme=dark&view=preview"
-  style={{
-    width: "100%",
-    height: "500px",
-    border: "0",
-    borderRadius: "4px",
-    overflow: "hidden",
-  }}
-  title="Framer Motion Animate on State Update"
-  allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking"
-  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-/>
+<IFrameEmbed sandboxId="framer-motion-variants-rj7ks0" />
 
 variants는 미리 정의된 타겟들의 집합입니다.
 
@@ -341,19 +285,7 @@ useEffect(() => {
 return <motion.div>{rounded}</motion.div>;
 ```
 
-<iframe
-  src="https://codesandbox.io/embed/framer-motion-animate-content-bxx7lt?fontsize=14&hidenavigation=1&theme=dark&view=preview"
-  style={{
-    width: "100%",
-    height: "500px",
-    border: "0",
-    borderRadius: "4px",
-    overflow: "hidden",
-  }}
-  title="Framer Motion Animate on State Update"
-  allow="accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking"
-  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-/>
+<IFrameEmbed sandboxId="framer-motion-animate-content-bxx7lt" />
 
 ## 하드웨어 가속 애니메이션
 

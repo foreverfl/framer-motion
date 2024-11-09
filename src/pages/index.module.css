@@ -21,3 +21,18 @@
   align-items: center;
   justify-content: center;
 }
+
+.mainContainer {
+  display: flex; /* Flexbox 레이아웃 설정 */
+}
+
+.sidebar {
+  flex: 1; /* 사이드바를 너비의 일부로 설정 */
+  padding-right: 20px;
+  border-right: 1px solid #ddd;
+}
+
+.mainContent {
+  flex: 3; /* 본문 영역을 사이드바보다 넓게 설정 */
+  padding-left: 20px;
+}
