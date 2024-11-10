@@ -1,6 +1,7 @@
-import React from "react";
 import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
 import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
 
 # 트랜지션
 
@@ -23,7 +24,7 @@ import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
 />
 ```
 
-### 값별 트랜지션
+### 개별 값 트랜지션
 
 각각의 특정 값에 대해 서로 다른 트랜지션 설정을 정의할 수 있습니다.
 
@@ -37,7 +38,7 @@ transition={{
 
 ## 오케스트레이션
 
-#### delay: `number`
+#### delay: <PropertyType>number</PropertyType>
 
 애니메이션을 지정된 시간(초)만큼 지연시킵니다. 기본값은 0입니다.
 
@@ -47,11 +48,11 @@ const transition = {
 };
 ```
 
-delay를 음수 값으로 설정하면, 애니메이션이 해당 시간만큼 진행된 상태에서 시작됩니다. 예를 들어, 1초 지점에서 시작하려면 delay를 -1로 설정하면 됩니다.
+`delay`를 음수 값으로 설정하면, 애니메이션이 해당 시간만큼 진행된 상태에서 시작됩니다. 예를 들어, 1초 지점에서 시작하려면 `delay`를 `-1`로 설정하면 됩니다.
 
-#### delayChildren: `number`
+#### delayChildren: <PropertyType>number</PropertyType>
 
-variant를 사용할 때, 자식 애니메이션이 이 시간(초) 이후에 시작됩니다. 트랜지션 속성은 Frame과 variant 모두에 직접 추가할 수 있습니다. variant에 추가하는 것이 일반적으로 더 유연한데, 이는 시각적 상태별로 지연을 커스터마이즈할 수 있기 때문입니다.
+variant를 사용할 때, 자식 애니메이션이 이 시간(초) 이후에 시작됩니다. 트랜지션 속성은 `Frame`과 `variant` 모두에 직접 추가할 수 있습니다. `variant`에 추가하는 것이 일반적으로 더 유연한데, 이는 시각적 상태별로 지연을 커스터마이즈할 수 있기 때문입니다.
 
 ```jsx
 const container = {
@@ -77,116 +78,427 @@ return (
 );
 ```
 
-#### staggerChildren: `number`
+#### staggerChildren: <PropertyType>number</PropertyType>
 
 variant를 사용할 때, 자식 컴포넌트들의 애니메이션을 이 시간(초)만큼 순차적으로 지연시킬 수 있습니다.
 
-예를 들어, staggerChildren이 0.01이면, 첫 번째 자식은 0초, 두 번째는 0.01초, 세 번째는 0.02초 등의 지연이 적용됩니다.
+예를 들어, `staggerChildren`이 `0.01`이면, 첫 번째 자식은 `0`초, 두 번째는 `0.01`초, 세 번째는 `0.02`초 등의 지연이 적용됩니다.
 
-계산된 순차 지연은 delayChildren에 추가됩니다.
+계산된 순차 지연은 `delayChildren`에 추가됩니다.
 
-#### staggerDirection: `number`
+```jsx
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.5,
+    },
+  },
+};
+
+const item = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1 },
+};
+
+return (
+  <motion.ol variants={container} initial="hidden" animate="show">
+    <motion.li variants={item} />
+    <motion.li variants={item} />
+  </motion.ol>
+);
+```
+
+#### staggerDirection: <PropertyType>number</PropertyType>
 
 자식들을 순차적으로 지연시키는 방향을 설정합니다.
 
-1은 처음부터 마지막까지, -1은 마지막부터 처음까지 순차적으로 적용됩니다.
+`1`은 처음부터 마지막까지, `-1`은 마지막부터 처음까지 순차적으로 적용됩니다.
 
-#### when: `false | "beforeChildren" | "afterChildren" | string`
+```jsx
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      delayChildren: 0.5,
+      staggerDirection: -1,
+    },
+  },
+};
 
-트랜지션과 그 자식들 간의 관계를 설명합니다. 기본값은 false입니다.
+const item = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1 },
+};
 
-variant를 사용할 때, 트랜지션은 자식들과의 관계에 따라 다음과 같이 예약될 수 있습니다:
+return (
+  <motion.ul variants={container} initial="hidden" animate="show">
+    <motion.li variants={item} size={50} />
+    <motion.li variants={item} size={50} />
+  </motion.ul>
+);
+```
 
-- "beforeChildren": 자식 트랜지션을 시작하기 전에 이 트랜지션을 완료
-- "afterChildren": 자식 트랜지션이 완료된 후 이 트랜지션을 시작
+#### when: <PropertyType>false | "beforeChildren" | "afterChildren" | string</PropertyType>
 
-## 반복
+"트랜지션과 자식 요소들 간의 관계를 정의합니다. 기본값은 `false`입니다.
 
-#### repeat: `number`
+variant를 사용할 때, 자식들과의 관계에 따라 트랜지션 순서를 예약할 수 있습니다. `"beforeChildren"`을 사용하면 자식 트랜지션이 시작되기 전에 이 트랜지션을 먼저 완료하고, `"afterChildren"`을 사용하면 자식 트랜지션이 모두 완료된 후에 이 트랜지션이 시작됩니다."
 
-트랜지션을 반복할 횟수입니다. 무한 반복을 위해서는 Infinity로 설정합니다.
+```jsx
+const list = {
+  hidden: {
+    opacity: 0,
+    transition: { when: "afterChildren" },
+  },
+};
 
-repeatType를 설정하지 않으면 애니메이션이 반복됩니다.
+const item = {
+  hidden: {
+    opacity: 0,
+    transition: { duration: 2 },
+  },
+};
 
-#### repeatType: `"loop" | "reverse" | "mirror"`
+return (
+  <motion.ul variants={list} animate="hidden">
+    <motion.li variants={item} />
+    <motion.li variants={item} />
+  </motion.ul>
+);
+```
+
+#### repeat: <PropertyType>number</PropertyType>
+
+트랜지션을 반복할 횟수입니다. 무한 반복을 위해서는 `Infinity`로 설정합니다.
+
+`repeatType`를 설정하지 않으면 애니메이션이 반복됩니다.
+
+#### repeatType: <PropertyType>"loop" | "reverse" | "mirror"</PropertyType>
 
 애니메이션 반복 방식을 지정합니다:
 
-- loop: 애니메이션을 처음부터 반복
-- reverse: 정방향과 역방향 재생을 번갈아가며 실행
-- mirror: from과 to 값을 번갈아가며 전환
+- `loop`: 애니메이션을 처음부터 반복
+- `reverse`: 정방향과 역방향 재생을 번갈아가며 실행
+- `mirror`: from과 to 값을 번갈아가며 전환
 
-#### repeatDelay: `number`
+```jsx
+<motion.div
+  animate={{ rotate: 180 }}
+  transition={{
+    repeat: 1,
+    repeatType: "reverse",
+    duration: 2,
+  }}
+/>
+```
+
+#### repeatDelay: <PropertyType>number</PropertyType>
 
 애니메이션을 반복할 때, 각 반복 사이에 대기할 시간(초)을 설정합니다.
 
+```jsx
+<motion.div
+  animate={{ rotate: 180 }}
+  transition={{ repeat: Infinity, repeatDelay: 1 }}
+/>
+```
+
 ## Tween
 
-#### type: `"tween"`
+#### type: <PropertyType>"tween"</PropertyType>
 
-지속 시간 기반 애니메이션을 사용하려면 type을 "tween"으로 설정합니다. 오케스트레이션이 아닌 트랜지션 값이 type 속성 없이 설정되면, 이것이 기본 애니메이션으로 사용됩니다.
+지속 시간 기반 애니메이션을 사용하려면 `type`을 `"tween"`으로 설정합니다. 오케스트레이션이 아닌 `transition` 값이 `type` 속성 없이 설정되면, 이것이 기본 애니메이션으로 사용됩니다.
 
-#### duration: `number`
+```jsx
+<motion.path
+  animate={{ pathLength: 1 }}
+  transition={{ duration: 2, type: "tween" }}
+/>
+```
 
-tween 애니메이션의 지속 시간입니다. 기본값은 0.3초이며, 키프레임 시리즈를 애니메이션할 때는 0.8초입니다.
+#### duration: <PropertyType>number</PropertyType>
 
-#### ease: `Easing | Easing[]`
+tween 애니메이션의 지속 시간입니다. 기본값은 `0.3`초이며, 키프레임 시리즈를 애니메이션할 때는 `0.8`초입니다.
 
-사용할 이징 함수입니다. 다음 중 하나로 설정할 수 있습니다:
+```jsx
+const variants = {
+  visible: {
+    opacity: 1,
+    transition: { duration: 2 },
+  },
+};
+```
 
-- 기존 이징 함수의 이름
+#### ease: <PropertyType>Easing | Easing[]</PropertyType>
+
+사용할 속도 조절(easing) 함수입니다. 다음 중 하나로 설정할 수 있습니다:
+
+- 미리 정의된 속도 조절 함수 이름
 - cubic bezier 곡선을 정의하는 4개의 숫자 배열
-- 0-1 사이의 값을 받아서 0-1 사이의 값을 반환하는 이징 함수
+- 0-1 사이의 값을 받아서 `0-1` 사이의 값을 반환하는 커스텀 함수
 
-키프레임 애니메이션에서 여러 값의 배열로 애니메이션 값이 설정된 경우, ease를 이징 함수의 배열로 설정하여 각 값 사이에 서로 다른 이징을 설정할 수 있습니다.
+키프레임 애니메이션에서 여러 값의 배열로 애니메이션 값이 설정된 경우, `ease`를 속도 조절 함수의 배열로 설정하여 각 값 사이에 서로 다른 속도 조절 효과를 줄 수 있습니다.
 
-Framer의 내장 이징 함수들:
+```jsx
+<motion.div
+  animate={{ opacity: 0 }}
+  transition={{ ease: [0.17, 0.67, 0.83, 0.67] }}
+/>
+```
 
-- "linear"
-- "easeIn", "easeOut", "easeInOut"
-- "circIn", "circOut", "circInOut"
-- "backIn", "backOut", "backInOut"
-- "anticipate"
+Framer의 내장 속도 조절 함수들:
+
+- `"linear"`
+- `"easeIn"`, `"easeOut"`, `"easeInOut"`
+- `"circIn"`, `"circOut"`, `"circInOut"`
+- `"backIn"`, `"backOut"`, `"backInOut"`
+- `"anticipate"`
+
+#### from: <PropertyType>number | string</PropertyType>
+
+애니메이션의 시작 값을 지정합니다. 기본적으로, 이는 현재 애니메이션 중인 값의 상태입니다.
+
+```jsx
+<motion.div animate={{ rotate: 180 }} transition={{ from: 90, duration: 2 }} />
+```
+
+#### times: <PropertyType>number[]</PropertyType>
+
+키프레임 애니메이션에서 `times`는 각 키프레임이 애니메이션의 어느 시점에 도달하는지를 결정하는 데 사용됩니다. `times` 배열의 각 값은 `duration`을 나타내는 `0`과 `1` 사이의 값입니다.
+
+`times` 배열의 길이는 반드시 키프레임의 개수와 동일해야 합니다. 기본값은 일정한 간격으로 분할된 지속 시간의 배열입니다.
+
+```jsx
+<motion.div
+  animate={{ scale: [0, 1, 0.5, 1] }}
+  transition={{ times: [0, 0.1, 0.9, 1] }}
+/>
+```
 
 ## Spring
 
-현실적인 모션을 위한 스프링 물리학을 시뮬레이션하는 애니메이션입니다.
+현실적인 움직임을 위한 스프링 물리 효과를 시뮬레이션하는 애니메이션입니다.
 
-x, y, scale, rotate와 같은 물리적 값에 대한 기본 애니메이션입니다.
+<IFrameEmbed sandboxId="framer-motion-spring-transition-e6c8dm"></IFrameEmbed>
 
-#### type: `"spring"`
+`x`, `y`, `scale`, `rotate`와 같은 물리적 값에 대한 기본 애니메이션입니다.
 
-스프링 물리학을 사용한 자연스러운 움직임을 위해 type을 "spring"으로 설정합니다. 기본값으로 설정되어 있습니다.
+#### type: <PropertyType>"spring"</PropertyType>
 
-#### damping: `number`
+`type`을 `"spring"`으로 설정하면 스프링 물리를 사용해 자연스러운 모션으로 애니메이션이 진행됩니다. 기본적으로 `type`은 `"spring"`으로 설정되어 있습니다.
 
-반대 힘의 강도입니다. 0으로 설정하면 스프링이 무기한으로 진동합니다. 기본값은 10입니다.
+```jsx
+<motion.div animate={{ rotate: 180 }} transition={{ type: "spring" }} />
+```
 
-#### mass: `number`
+#### duration: <PropertyType>number</PropertyType>
 
-움직이는 물체의 질량입니다. 높은 값일수록 더 느린 움직임이 됩니다. 기본값은 1입니다.
+애니메이션의 지속 시간을 초 단위로 정의합니다. 스프링 애니메이션은 최대 10초까지 설정할 수 있습니다.
 
-#### stiffness: `number`
+`bounce`가 설정된 경우 기본값은 `0.8`입니다.
 
-스프링의 강성입니다. 높은 값일수록 더 갑작스러운 움직임이 생성됩니다. 기본값은 100입니다.
+**참고**: `stiffness`, `damping` 또는 `mass`가 설정되면 `duration`과 `bounce`는 무시됩니다.
+
+```jsx
+<motion.div
+  animate={{ x: 100 }}
+  transition={{ type: "spring", duration: 0.8 }}
+/>
+```
+
+#### bounce: <PropertyType>number</PropertyType>
+
+`bounce`는 스프링 애니메이션의 "탄력성"을 결정합니다.
+
+`0`은 탄성이 없고, `1`은 매우 탄력 있게 움직입니다.
+
+`duration`이 설정된 경우 기본값은 `0.25`입니다.
+
+**참고**: `stiffness`, `damping`, 또는 `mass`가 설정되면 `bounce`와 `duration`은 무시됩니다.
+
+```jsx
+<motion.div
+  animate={{ x: 100 }}
+  transition={{ type: "spring", bounce: 0.25 }}
+/>
+```
+
+#### damping: <PropertyType>number</PropertyType>
+
+반대 방향의 힘의 강도입니다. 0으로 설정하면 스프링이 무한정 진동합니다. 기본값은 `10`입니다.
+
+```jsx
+<motion.a
+  animate={{ rotate: 180 }}
+  transition={{ type: "spring", damping: 300 }}
+/>
+```
+
+#### mass: <PropertyType>number</PropertyType>
+
+움직이는 객체의 질량입니다. 값이 클수록 움직임이 느려집니다. 기본값은 `1`입니다.
+
+```jsx
+<motion.feTurbulence
+  animate={{ baseFrequency: 0.5 } as any}
+  transition={{ type: "spring", mass: 0.5 }}
+/>
+```
+
+#### stiffness: <PropertyType>number</PropertyType>
+
+스프링의 강성도입니다. 값이 클수록 움직임이 더 갑작스러워집니다. 기본값은 `100`입니다.
+
+```jsx
+<motion.section
+  animate={{ rotate: 180 }}
+  transition={{ type: "spring", stiffness: 50 }}
+/>
+```
+
+#### velocity: <PropertyType>number</PropertyType>
+
+스프링의 초기 속도입니다. 기본적으로 이 값은 컴포넌트의 현재 속도입니다.
+
+```jsx
+<motion.div
+  animate={{ rotate: 180 }}
+  transition={{ type: "spring", velocity: 2 }}
+/>
+```
+
+#### restSpeed: <PropertyType>number</PropertyType>
+
+절대 속도가 이 값보다 낮고 위치 변화량(delta)가 `restDelta`보다 작을 경우 애니메이션이 종료됩니다. 기본값은 `0.01`입니다.
+
+```jsx
+<motion.div
+  animate={{ rotate: 180 }}
+  transition={{ type: "spring", restSpeed: 0.5 }}
+/>
+```
+
+#### restDelta: <PropertyType>number</PropertyType>
+
+거리가 이 값보다 낮고 속도가 `restSpeed`보다 낮으면 애니메이션이 종료됩니다. 애니메이션이 종료되면 스프링은 해당 위치에 고정됩니다. 기본값은 `0.01`입니다.
+
+```jsx
+<motion.div
+  animate={{ rotate: 180 }}
+  transition={{ type: "spring", restDelta: 0.5 }}
+/>
+```
 
 ## Inertia
 
 초기 속도를 기반으로 값을 감속시키는 애니메이션으로, 주로 관성 스크롤을 구현하는 데 사용됩니다.
 
-선택적으로 최소/최대 경계를 정의할 수 있으며, 관성은 스프링 애니메이션으로 이 경계에 스냅됩니다.
+선택적으로 최소(`min`) 및 최대(`max`) 경계를 설정할 수 있으며, 이 경우 관성은 해당 값에 스프링 애니메이션으로 고정됩니다.
 
-#### type: `"inertia"`
+이 애니메이션은 목표 값을 자동으로 계산하며, `modifyTarget` 속성을 통해 이 값을 수정할 수 있습니다.
 
-관성 애니메이션을 사용하려면 type을 "inertia"로 설정합니다. 모멘텀 스크롤링과 같은 자연스러운 감속에 사용될 수 있습니다.
+이를 통해 그리드에 맞추는 기능이나 유사한 기능을 추가할 수 있습니다.
+
+관성은 `dragTransition`에 사용되는 애니메이션이기도 하며, 해당 속성을 통해 구성할 수 있습니다.
+
+#### type: <PropertyType>"inertia"</PropertyType>
+
+`type`을 `"inertia"`로 설정하면 관성 애니메이션을 사용할 수 있습니다. 기본적으로는 `"tween"`으로 설정되어 있으며, 자연스러운 감속이 필요한 관성 스크롤 등에 사용될 수 있습니다.
+
+```jsx
+<motion.div
+  animate={{ rotate: 180 }}
+  transition={{ type: "inertia", velocity: 50 }}
+/>
+```
+
+#### modifyTarget(v): <PropertyType>number</PropertyType>
+
+자동으로 계산된 목표 값을 받아 새로운 값으로 반환하는 함수입니다. 목표 값을 그리드에 고정할 때 유용합니다.
+
+```jsx
+<motion.div
+  drag
+  dragTransition={{
+    power: 0,
+    // 계산된 목표 값을 50 픽셀 단위로 고정
+    modifyTarget: (target) => Math.round(target / 50) * 50,
+  }}
+/>
+```
+
+#### bounceStiffness: <PropertyType>number</PropertyType>
+
+`min` 또는 `max`가 설정된 경우, 바운스 스프링의 강성도를 설정합니다. 값이 높을수록 더 갑작스러운 움직임이 됩니다. 기본값은 `500`입니다.
+
+```jsx
+<motion.div
+  drag
+  dragTransition={{
+    min: 0,
+    max: 100,
+    bounceStiffness: 100,
+  }}
+/>
+```
+
+#### bounceDamping: <PropertyType>number</PropertyType>
+
+`min` 또는 `max`가 설정된 경우, 바운스 스프링의 감쇠력을 설정합니다. `0`으로 설정하면 스프링이 무한히 진동합니다. 기본값은 `10`입니다.
+
+```jsx
+<motion.div
+  drag
+  dragTransition={{
+    min: 0,
+    max: 100,
+    bounceDamping: 8,
+  }}
+/>
+```
 
 #### power: `number`
 
-높은 power 값은 더 먼 목표 지점을 의미합니다. 기본값은 0.8입니다.
+`power` 값이 높을수록 목표 위치가 멀어집니다. 기본값은 `0.8`입니다.
 
-#### timeConstant: `number`
+```jsx
+<motion.div drag dragTransition={{ power: 0.2 }} />
+```
 
-시간 상수를 조정하면 감속의 지속 시간이 변경되어 느낌이 달라집니다. 기본값은 700입니다.
+#### timeConstant: <PropertyType>number</PropertyType>
+
+`timeConstant` 값을 조정하면 감속의 지속 시간이 바뀌며, 애니메이션의 느낌이 달라집니다. 기본값은 `700`입니다.
+
+```jsx
+<motion.div drag dragTransition={{ timeConstant: 200 }} />
+```
+
+#### restDelta: <PropertyType>number</PropertyType>
+
+애니메이션 목표와의 거리가 이 값보다 작고 절대 속도가 `restSpeed`보다 낮으면 애니메이션이 종료됩니다. 애니메이션이 종료되면 값이 목표에 고정됩니다. 기본값은 `0.01`이며, 일반적으로 매끄러운 애니메이션 종료를 위해 기본값을 사용하며, 특수한 경우에만 조정합니다.
+
+```jsx
+<motion.div drag dragTransition={{ restDelta: 10 }} />
+```
+
+#### min: <PropertyType>number</PropertyType>
+
+최소 제한값입니다. 설정된 경우, 값이 이 값에 도달하면 "튕겨" 나가며, 애니메이션이 이 값보다 작은 상태에서 시작되면 즉시 스프링됩니다.
+
+```jsx
+<motion.div drag dragTransition={{ min: 0, max: 100 }} />
+```
+
+#### max: <PropertyType>number</PropertyType>
+
+최대 제한값입니다. 설정된 경우, 값이 이 값에 도달하면 "튕겨" 나가며, 애니메이션의 초기 값이 이 값보다 크면 즉시 고정됩니다.
+
+```jsx
+<motion.div drag dragTransition={{ min: 0, max: 100 }} />
+```
 
 ## 기타
 
@@ -196,5 +508,16 @@ x, y, scale, rotate와 같은 물리적 값에 대한 기본 애니메이션입�
 
 다음 속성들도 포함할 수 있습니다:
 
-- transition: 모든 값 또는 개별 값에 대한 트랜지션을 지정
-- transitionEnd: 애니메이션이 끝날 때 설정할 값을 지정
+- `transition`: 모든 값 또는 개별 값에 대한 트랜지션을 지정
+- `transitionEnd`: 애니메이션이 끝날 때 설정할 값을 지정
+
+```jsx
+const target = {
+  x: "0%",
+  opacity: 0,
+  transition: { duration: 1 },
+  transitionEnd: { display: "none" },
+};
+```
+
+<IFrameEmbed sandboxId="framer-motion-transitionend-wfgrp7" />

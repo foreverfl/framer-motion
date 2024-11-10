@@ -6,7 +6,7 @@ import path from "path";
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
 const config: Config = {
-  title: "Framer Motion",
+  title: "Framer for Developers",
   favicon: "img/framer-black-mark.svg",
 
   // Set the production url of your site here
