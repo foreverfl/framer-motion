@@ -1,0 +1,208 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# Reorder
+
+**간단한 컴포넌트 세트로 드래그-앤-리오더 효과를 만듭니다.**
+
+`Reorder` 컴포넌트는 재정렬 가능한 탭이나 할 일 항목과 같은 드래그-앤-리오더 목록을 만드는 데 사용할 수 있습니다.
+
+```jsx
+import { Reorder } from "framer-motion";
+import { useState } from "react";
+
+function List() {
+  const [items, setItems] = useState([0, 1, 2, 3]);
+
+  return (
+    <Reorder.Group axis="y" values={items} onReorder={setItems}>
+      {items.map((item) => (
+        <Reorder.Item key={item} value={item}>
+          {item}
+        </Reorder.Item>
+      ))}
+    </Reorder.Group>
+  );
+}
+```
+
+<IFrameEmbed sandboxId="framer-motion-5-drag-to-reorder-lists-uonye" />
+
+## 사용법
+
+모든 재정렬 가능한 목록은 `Reorder.Group` 컴포넌트로 감싸져 있습니다.
+
+```jsx
+import { Reorder } from "framer-motion";
+
+function List() {
+  return <Reorder.Group></Reorder.Group>;
+}
+```
+
+기본적으로 이는 `<ul>`로 렌더링되지만, `as` 속성을 사용하여 변경할 수 있습니다.
+
+```jsx
+<Reorder.Group as="ol">
+```
+
+`Reorder.Group`에는 `values` 속성을 통해 재정렬 가능한 목록의 값 배열을 전달해야 합니다.
+
+추가로, 최신 계산된 순서로 `onReorder` 이벤트가 발생합니다. 항목을 재정렬하려면 이것이 `values` 상태를 업데이트해야 합니다.
+
+```jsx
+import { Reorder } from "framer-motion";
+
+function List() {
+  const [items, setItems] = useState([0, 1, 2, 3]);
+
+  return <Reorder.Group values={items} onReorder={setItems}></Reorder.Group>;
+}
+```
+
+각 재정렬 가능한 항목을 렌더링하기 위해 `Reorder.Item`을 사용하고, `value` 속성을 통해 해당 항목이 나타내는 값을 전달합니다.
+
+```jsx
+import { Reorder } from "framer-motion";
+
+function List() {
+  const [items, setItems] = useState([0, 1, 2, 3]);
+
+  return (
+    <Reorder.Group values={items} onReorder={setItems}>
+      {items.map((item) => (
+        <Reorder.Item key={item} value={item}>
+          {item}
+        </Reorder.Item>
+      ))}
+    </Reorder.Group>
+  );
+}
+```
+
+이제 항목이 드래그될 때 새로운 순서로 `onReorder`가 실행됩니다.
+
+### 레이아웃 애니메이션
+
+`Reorder.Item` 컴포넌트는 이미 레이아웃 애니메이션을 수행하도록 구성되어 있으므로, 재정렬 가능한 목록에 새 항목이 추가되거나 제거되면 주변 항목이 자동으로 새 위치로 애니메이션됩니다.
+
+<IFrameEmbed sandboxId="framer-motion-5-drag-to-reorder-tabs-zd2q7" />
+
+### Exit 애니메이션
+
+`AnimatePresence`를 정상적으로 사용하여 React 트리에 들어오고 나가는 항목에 애니메이션을 적용할 수 있습니다.
+
+```jsx
+<AnimatePresence>
+  {items.map((item) => (
+    <Reorder.Item
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      key={item}
+    />
+  ))}
+</AnimatePresence>
+```
+
+### 드래그 트리거
+
+기본적으로 `Reorder.Item`의 모든 부분이 드래그 가능합니다. [`useDragControls`](/docs/hooks/use-drag-controls)를 사용하여 드래그 트리거 역할을 할 다른 컴포넌트를 정의할 수 있습니다.
+
+```jsx
+import { Reorder, useDragControls } from "framer-motion";
+
+function Item({ value }) {
+  const controls = useDragControls();
+
+  return (
+    <Reorder.Item value={value} dragListener={false} dragControls={controls}>
+      <div
+        className="reorder-handle"
+        onPointerDown={(e) => controls.start(e)}
+      />
+    </Reorder.Item>
+  );
+}
+```
+
+<IFrameEmbed sandboxId="framer-motion-5-drag-to-reorder-lists-with-drag-handle-j9enw" />
+
+### 스크롤 가능한 목록
+
+`Reorder.Item` 컴포넌트가 스크롤 가능한 컨테이너 내에 있는 경우, Framer Motion이 스크롤 오프셋을 올바르게 측정할 수 있도록 해당 컨테이너에 `layoutScroll` 속성이 필요합니다.
+
+이 예제에서 스크롤 가능한 컨테이너는 `Reorder.Group`입니다:
+
+```jsx
+<Reorder.Group
+  axis="y"
+  onReorder={setItems}
+  layoutScroll
+  style={{ overflowY: "scroll" }}
+>
+  {items.map((item) => (
+    <Item key={item} item={item} />
+  ))}
+</Reorder.Group>
+```
+
+<IFrameEmbed sandboxId="framer-motion-5-drag-to-reorder-lists-forked-n27v5" />
+
+스크롤 가능한 컨테이너가 일반 HTML 컴포넌트인 경우 `layoutScroll`과 함께 `motion` 컴포넌트로 변환해야 합니다.
+
+### z-index
+
+`Reorder.Item`은 현재 드래그되는 항목이 주변 항목 위에 나타나도록 자동으로 `z-index` 스타일을 설정합니다.
+
+하지만 `z-index`는 `position !== "static"`인 항목에만 영향을 미칩니다. 따라서 이 효과를 활성화하려면 `Reorder.Item`의 position을 `relative`나 `absolute`로 설정해야 합니다.
+
+## Reorder.Group 속성
+
+#### as: <PropertyType>string</PropertyType>
+
+`Reorder.Group`이 렌더링할 기본 컴포넌트입니다.
+
+현재는 HTML 엘리먼트 이름만 허용하지만, 향후에는 HTML을 렌더링하는 모든 React 컴포넌트를 허용할 예정입니다.
+
+기본값은 `"ul"`입니다.
+
+#### axis: <PropertyType>"x" | "y"</PropertyType>
+
+**필수**
+
+재정렬 감지의 방향입니다.
+
+참고: `기본적으로` 모든 `Reorder.Item` 컴포넌트는 이 축에서만 시각적으로 이동합니다. 두 축 모두에서 시각적 움직임(재정렬은 **불가**)을 허용하려면 자식 `Reorder.Item` 컴포넌트에 drag 속성을 전달하세요.
+
+#### values: <PropertyType>any[]</PropertyType>
+
+**필수**
+
+렌더링된 `Reorder.Item` 컴포넌트의 소스로 사용되는 값 배열입니다.
+
+#### onReorder(<PropertyType>newOrder</PropertyType>): <PropertyType>void</PropertyType>
+
+**필수**
+
+항목이 재정렬된 것으로 감지될 때 실행될 콜백입니다. 제공된 `newOrder`는 `values` 상태 업데이트 함수에 전달되어야 합니다.
+
+## Reorder.Item 속성
+
+`Reorder.Item` 컴포넌트는 다음과 같은 추가 속성 외에도 모든 [motion 컴포넌트 속성](/docs/components/motion)을 허용합니다:
+
+#### as: <PropertyType>string</PropertyType>
+
+`Reorder.Item`이 렌더링할 기본 컴포넌트입니다.
+
+현재는 HTML 엘리먼트 이름만 허용하지만, 향후에는 HTML을 렌더링하는 모든 React 컴포넌트를 허용할 예정입니다.
+
+기본값은 `"li"`입니다.
+
+#### value: <PropertyType>any</PropertyType>
+
+**필수**
+
+`onReorder`가 호출될 때, 이는 새로 정렬된 배열에 전달될 값입니다.

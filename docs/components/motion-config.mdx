@@ -1,0 +1,44 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# MotionConfig
+
+**Framer Motion의 설정 옵션을 지정합니다.**
+
+`MotionConfig` 컴포넌트는 모든 자식 `motion` 컴포넌트에 대한 설정 옵션을 지정하는 데 사용할 수 있습니다. 현재는 `transition` 속성만 허용됩니다.
+
+```jsx
+import { motion, MotionConfig } from "framer-motion";
+
+export const MyComponent = ({ isVisible }) => (
+  <MotionConfig transition={{ duration: 1 }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
+  </MotionConfig>
+);
+```
+
+## 속성
+
+#### transition: <PropertyType>Transition</PropertyType>
+
+전체 트리에 대한 새로운 기본 전환을 정의합니다.
+
+#### reducedMotion: <PropertyType>"user" | "always" | "never"</PropertyType>
+
+기본값은 `"never"`입니다.
+
+`reducedMotion`은 감소된 모션 처리에 대한 사이트 전체 정책을 설정할 수 있게 해줍니다:
+
+- `user`: 사용자의 기기 설정을 존중합니다.
+- `always`: 감소된 모션을 강제 적용합니다.
+- `never`: 모션을 감소시키지 않습니다.
+
+모션이 감소되면 transform과 layout 애니메이션이 비활성화됩니다. `opacity`와 `backgroundColor`와 같은 다른 애니메이션은 유지됩니다.
+
+**참고:** 비활성화되고 활성화된 상태로 유지되는 애니메이션의 유형은 피드백을 반영하여 변경될 수 있습니다.
+
+#### nonce: <PropertyType>string</PropertyType>
+
+`nonce` 속성이 있는 [Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/style-src#unsafe_inline_styles)를 사용하는 경우, `MotionConfig`를 통해 동일한 속성을 전달하면 Motion에 의해 생성된 모든 `style` 블록이 보안 정책을 준수할 수 있습니다.

@@ -1,0 +1,228 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# AnimatePresence
+
+**React 트리에서 컴포넌트가 제거될 때 애니메이션을 적용합니다.**
+
+`AnimatePresence`를 사용하면 컴포넌트가 React 트리에서 제거될 때 애니메이션을 적용할 수 있습니다.
+
+다음과 같은 이유로 exit 애니메이션을 활성화하는 데 필요합니다:
+
+1. 컴포넌트가 언마운트될 때를 알려주고
+2. 작업(예: 애니메이션)이 완료될 때까지 언마운트를 지연시킬 수 있는 React 라이프사이클 메서드가 없기 때문입니다.
+
+```jsx
+import { motion, AnimatePresence } from "framer-motion";
+
+export const MyComponent = ({ isVisible }) => (
+  <AnimatePresence>
+    {isVisible && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
+    )}
+  </AnimatePresence>
+);
+```
+
+## 사용법
+
+### Exit 애니메이션
+
+`AnimatePresence`는 직계 자식이 React 트리에서 제거되는 것을 감지하여 작동합니다.
+
+제거된 자식에 포함된 exit 속성을 가진 모든 `motion` 컴포넌트는 전체 트리가 최종적으로 DOM에서 제거되기 전에 해당 애니메이션을 실행합니다.
+
+참고: `AnimatePresence`가 트리에서 그들의 존재를 추적할 수 있도록 직계 자식은 각각 고유한 `key` 속성을 가져야 합니다.
+
+```jsx
+const MyComponent = ({ isVisible }) => (
+  <AnimatePresence>
+    {isVisible && (
+      <motion.div
+        key="modal"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
+    )}
+  </AnimatePresence>
+);
+```
+
+`initial`과 `animate`처럼, `exit`도 값들의 `TargetAndTransition` 객체로 정의하거나, 전체 트리를 애니메이션화할 variant 레이블로 정의할 수 있습니다.
+
+React에서 컴포넌트의 `key`를 변경하면 React는 이를 완전히 새로운 컴포넌트로 취급합니다. 따라서 새로운 것이 마운트되기 전에 이전 것이 언마운트됩니다. 그래서 `AnimatePresence`의 단일 자식의 `key`를 변경함으로써 슬라이드쇼와 같은 컴포넌트를 쉽게 만들 수 있습니다.
+
+```jsx
+export const Slideshow = ({ image }) => (
+  <AnimatePresence>
+    <motion.img
+      key={image.src}
+      src={image.src}
+      initial={{ x: 300, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      exit={{ x: -300, opacity: 0 }}
+    />
+  </AnimatePresence>
+);
+```
+
+<IFrameEmbed sandboxId="framer-motion-image-gallery-pqvx3" />
+
+### 여러 자식들
+
+`AnimatePresence`는 여러 자식들과도 동일한 방식으로 작동합니다. 각각이 고유한 `key`를 가지고 있는지 확인하기만 하면, 컴포넌트들은 트리에 추가되거나 제거될 때 애니메이션이 적용됩니다.
+
+```jsx
+export const Notifications = ({ messages }) => (
+  <AnimatePresence>
+    {messages.map(({ id, content }) => (
+      <motion.li key={id} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        {content}
+      </motion.li>
+    ))}
+  </AnimatePresence>
+);
+```
+
+### 초기 애니메이션 억제
+
+마운트 애니메이션은 이미 `initial`과 `animate` 속성을 통해 `motion` 컴포넌트에서 처리됩니다.
+
+`motion` 컴포넌트가 `initial={false}`로 설정되면, `animate`에 정의된 상태에서 시작합니다. 하지만 때로는, 예를 들어 채팅박스나 슬라이드쇼에서, 초기 렌더 이후에 추가되는 새로운 컴포넌트에만 애니메이션을 적용하고 싶을 수 있습니다.
+
+`AnimatePresence`에 `initial={false}`를 설정하면, `AnimatePresence`가 처음 로드될 때 존재하는 컴포넌트들은 `animate` 상태에서 시작합니다. 이 초기 렌더 이후에 들어오는 컴포넌트들만 애니메이션이 적용됩니다.
+
+```jsx
+const MyComponent = ({ isVisible }) => (
+  <AnimatePresence initial={false}>
+    {isVisible && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      />
+    )}
+  </AnimatePresence>
+);
+```
+
+### 커스텀 컴포넌트 애니메이션
+
+`AnimatePresence`의 자식들은 커스텀 컴포넌트일 수도 있습니다. 유일한 요구사항은 이 컴포넌트 내에 `exit` 속성을 가진 `motion` 컴포넌트가 하나 이상 있어야 한다는 것입니다.
+
+**참고**: DOM에서 제거되는 커스텀 컴포넌트는 포함된 `exit` 애니메이션이 트리거되기 위해서 여전히 `AnimatePresence`의 **직계 자식이어야 합니다**.
+
+```jsx
+const Item = () => (
+  <div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    />
+  </div>
+);
+
+/**
+ * React의 제한으로 인해 제거되는 컴포넌트는
+ * AnimatePresence의 직계 자식이어야 합니다.
+ */
+export const MyComponent = ({ items }) => (
+  <AnimatePresence>
+    {items.map(({ id }) => (
+      <Item key={id} />
+    ))}
+  </AnimatePresence>
+);
+```
+
+## 속성 (Props)
+
+#### initial: <PropertyType>boolean</PropertyType>
+
+`initial={false}`를 전달하면, `AnimatePresence`는 컴포넌트가 처음 렌더링될 때 존재하는 자식들의 초기 애니메이션을 비활성화합니다.
+
+```jsx
+<AnimatePresence initial={false}>
+  {isVisible && (
+    <motion.div
+      key="modal"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    />
+  )}
+</AnimatePresence>
+```
+
+#### custom: <PropertyType>any</PropertyType>
+
+컴포넌트가 제거되면, 더 이상 속성을 업데이트할 기회가 없습니다. 따라서 컴포넌트의 exit 속성이 동적 variant로 정의되어 있고 새로운 custom 속성을 전달하고 싶다면, `AnimatePresence`를 통해 할 수 있습니다. 이렇게 하면 떠나는 모든 컴포넌트가 최신 데이터를 사용하여 애니메이션을 적용하게 됩니다.
+
+#### mode: <PropertyType>"sync" | "wait" | "popLayout"</PropertyType>
+
+`AnimatePresence`가 들어오고 나가는 자식들을 처리하는 방식을 결정합니다.
+
+- `"sync"`: (기본값) 자식들이 추가/제거되는 즉시 애니메이션이 적용됩니다.
+- `"wait"`: 들어오는 자식은 나가는 자식의 애니메이션이 완료될 때까지 기다립니다. 참고: 현재는 한 번에 하나의 자식만 렌더링합니다.
+
+<IFrameEmbed sandboxId="framer-motion-animatepresence-wait-mode-t0mnhu" />
+
+- `"popLayout"`: 나가는 자식들이 페이지 레이아웃에서 "튀어나옵니다". 이를 통해 주변 요소들이 즉시 새로운 레이아웃으로 이동할 수 있습니다.
+
+<IFrameEmbed sandboxId="framer-motion-animatepresence-poplayout-mode-t7qxhv" />
+
+**커스텀 컴포넌트 참고**: `popLayout` 모드를 사용할 때, AnimatePresence의 직계 자식인 모든 커스텀 컴포넌트는 React의 `forwardRef` 함수로 래핑되어야 하며, 제공된 `ref`를 레이아웃에서 튀어나오기를 원하는 DOM 노드로 전달해야 합니다.
+
+#### onExitComplete(): <PropertyType>void</PropertyType>
+
+나가는 모든 노드의 애니메이션이 완료되었을 때 실행됩니다.
+
+## usePresence
+
+#### usePresence(): <PropertyType>AlwaysPresent | Present | NotPresent</PropertyType>
+
+컴포넌트가 `AnimatePresence`의 자식일 때, `usePresence`를 사용하여 React 트리에 아직 존재하는지 여부에 대한 정보에 접근할 수 있습니다.
+
+`isPresent`가 `false`이면, 컴포넌트가 트리에서 제거되었지만 `AnimatePresence`는 `safeToRemove`가 호출될 때까지 실제로 제거하지 않을 것입니다.
+
+```jsx
+import { usePresence } from "framer-motion";
+
+export const Component = () => {
+  const [isPresent, safeToRemove] = usePresence();
+
+  useEffect(() => {
+    !isPresent && setTimeout(safeToRemove, 1000);
+  }, [isPresent]);
+
+  return <div />;
+};
+```
+
+## useIsPresent
+
+#### useIsPresent(): <PropertyType>boolean</PropertyType>
+
+`usePresence`와 비슷하지만, `useIsPresent`는 단순히 컴포넌트가 존재하는지 여부만 반환합니다. `safeToRemove` 함수는 없습니다.
+
+```jsx
+import { useIsPresent } from "framer-motion";
+
+export const Component = () => {
+  const isPresent = useIsPresent();
+
+  useEffect(() => {
+    !isPresent && console.log("I've been removed!");
+  }, [isPresent]);
+
+  return <div />;
+};
+```

@@ -1,0 +1,72 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# LazyMotion
+
+**Motion의 기능들의 일부를 지연 로딩하여 번들 크기를 줄입니다.**
+
+`LazyMotion` 컴포넌트는 `motion` 컴포넌트의 일부 또는 모든 기능을 동기적으로 또는 비동기적으로 로딩하여 번들 크기를 줄이는 데 도움을 줄 수 있습니다.
+
+```jsx
+// React
+import { LazyMotion, domAnimations, m } from "framer-motion";
+
+// React Server Components
+import { LazyMotion, domAnimations } from "framer-motion";
+import * as m from "framer-motion/m";
+
+export const MyComponent = ({ isVisible }) => (
+  <LazyMotion features={domAnimations}>
+    <m.div animate={{ opacity: 1 }} />
+  </LazyMotion>
+);
+```
+
+기본적으로 `motion` 컴포넌트는 모든 기능이 미리 번들링되어 제공됩니다. `m` 컴포넌트는 `motion`과 정확히 동일한 방식으로 사용할 수 있지만, 미리 로드된 기능이 없는 상태로 제공됩니다. 이러한 기능들은 `LazyMotion`에 의해 제공됩니다.
+
+이를 통해 초기 번들 크기를 5kb 미만으로 줄일 수 있습니다.
+
+전체 사용 방법은 [번들 크기 줄이기 가이드](/docs/guides/reduce-bundle-size)를 참조하세요.
+
+## 속성
+
+### features: <PropertyType>FeatureBundle | LazyFeatureBundle</PropertyType>
+
+기능 번들을 동기적 또는 비동기적으로 제공하는 데 사용할 수 있습니다.
+
+```jsx
+// features.js
+import { domAnimations } from "framer-motion";
+export default domAnimations;
+
+// index.js
+import { LazyMotion, m } from "framer-motion";
+
+const loadFeatures = import("./features.js").then((res) => res.default);
+
+function Component() {
+  return (
+    <LazyMotion features={loadFeatures}>
+      <m.div animate={{ scale: 1.5 }} />
+    </LazyMotion>
+  );
+}
+```
+
+### strict: <PropertyType>boolean</PropertyType>
+
+`true`로 설정하면, `motion` 컴포넌트가 `LazyMotion` 컴포넌트 내에서 렌더링될 때 에러를 발생시킵니다.
+
+```jsx
+// 이 컴포넌트는 motion 컴포넌트를 사용하면
+// m 컴포넌트 대신 코드 분할의 이점이 깨질 것이라는 설명과 함께 에러를 발생시킵니다.
+function Component() {
+  return (
+    <LazyMotion features={domAnimations} strict>
+      <motion.div />
+    </LazyMotion>
+  );
+}
+```

@@ -1,0 +1,530 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# Motion 컴포넌트
+
+**Motion 컴포넌트는 60fps 애니메이션과 제스처에 최적화된 DOM 기본 요소입니다.**
+
+모든 HTML과 SVG 요소에 대해 `motion` 컴포넌트가 있습니다. 예를 들어 `motion.div`, `motion.circle` 등이 있습니다.
+
+이러한 컴포넌트들은 정적 counterpart와 정확히 같은 방식으로 작동하지만, 다음과 같은 기능을 제공하는 속성을 제공합니다:
+
+- [애니메이션](/docs/animation/overview)
+- [드래그, 팬, 호버, 탭 제스처 추가](/docs/animation/gestures/)
+- 제스처와 [뷰포트에 진입하는 요소](/docs/animation/scroll)에 대한 애니메이션으로 응답
+- [variants](/docs/animation/overview/#variants)를 통해 React 트리 전체에 걸쳐 깊이 있게 애니메이션 적용
+- 그 외 더 많은 기능
+
+## Import
+
+`"framer-motion"`에서 `motion`을 import 하세요:
+
+```jsx
+// React
+import { motion } from "framer-motion";
+
+// React Server Components
+import * as motion from "framer-motion/client";
+```
+
+## 지원되는 값
+
+### 값 타입
+
+Motion은 다음을 애니메이션화할 수 있습니다:
+
+- 숫자: `0`, `10` 등
+- 숫자를 포함한 문자열: `"0vh"`, `"10px"` 등
+- 색상: Hex, RGB, HSLA
+- 여러 숫자나 색상을 포함하는 복잡한 문자열 (예: `"10px 0 #000"`)
+
+`"block"`과 같은 애니메이션화할 수 없는 값으로 애니메이션을 적용할 때, 이 값은 즉시 설정됩니다. `transitionEnd` 내에서 이 값을 설정하면, 애니메이션이 끝날 때 이 값이 설정됩니다.
+
+```jsx
+<motion.div
+  animate={{
+    x: 0,
+    backgroundColor: "#000",
+    boxShadow: "10px 10px 0 rgba(0, 0, 0, 0.2)",
+    position: "fixed",
+    transitionEnd: {
+      display: "none",
+    },
+  }}
+/>
+```
+
+### 값 타입 변환
+
+일반적으로 값은 같은 타입 사이에서만 애니메이션화될 수 있습니다 (예: 두 개의 `px`, 두 개의 `%` 등).
+
+하지만 HTML 컴포넌트의 `x`, `y`, `width`, `height`, `top`, `left`, `right`, `bottom` 값은 향상된 지원을 제공하며 서로 다른 값 타입 간에 자유롭게 애니메이션화될 수 있습니다.
+
+```jsx
+<motion.div initial={{ x: "100%" }} animate={{ x: "calc(100vw - 50%)" }} />
+```
+
+추가로, 모든 색상 타입(hex, HSL, RGB)은 서로 간에 애니메이션화될 수 있습니다.
+
+### Transform
+
+Transform 속성은 GPU에 의해 가속되며, 따라서 부드럽게 애니메이션화됩니다. 다음과 같이 개별적으로 설정하고 애니메이션화할 수 있습니다:
+
+- Translate 단축키: `x`, `y`, `z`
+- Translate: `translateX`, `translateY`, `translateZ`
+- Scale: `scale`, `scaleX`, `scaleY`
+- Rotate: `rotate`, `rotateX`, `rotateY`, `rotateZ`
+- Skew: `skew`, `skewX`, `skewY`
+- Perspective: `transformPerspective`
+
+`motion` 컴포넌트는 향상된 `style` 속성를 가지고 있어, 이러한 값들을 개별적으로 설정할 수도 있습니다.
+
+```jsx
+<motion.a
+  whileHover={{ scale: 1.2 }}
+  whileTap={{ scale: 0.8 }}
+  style={{ x: 100 }}
+/>
+```
+
+편의를 위해 transform 값은 특정 순서로 적용됩니다: translate, scale, rotate, skew.
+
+하지만 [`transformTemplate`](###transformtemplate) 속성을 사용하여 이 기본 순서를 커스터마이즈할 수 있습니다.
+
+```jsx
+function template({ rotate, x }) {
+  return `rotate(${rotate}) translateX(${x})`;
+}
+
+return (
+  <motion.div
+    transformTemplate={template}
+    animate={{ rotate: 360 }}
+    style={{ rotate: 0, x: "calc(50vh - 100px)" }}
+  />
+);
+```
+
+**SVG 참고**: SVG 컴포넌트의 경우, `x`, `y`와 `scale` 속성(`transform` 스타일과 반대)은 애니메이션 속성 내에서 `attrX`, `attrY`와 `attrScale`을 사용하여 설정할 수 있습니다.
+
+### Transform Origin
+
+`transform-origin`은 개별적으로 설정하고 애니메이션화할 수 있는 세 가지 단축값을 가집니다:
+
+- `originX`
+- `originY`
+- `originZ`
+
+숫자로 설정할 경우, `originX`와 `Y`는 `0`과 `1` 사이의 진행 값으로 기본 설정됩니다. `originZ`는 픽셀로 기본 설정됩니다.
+
+```jsx
+<motion.div style={{ originX: 0.5 }} />
+```
+
+## CSS 변수
+
+Motion은 CSS 변수의 값을 애니메이션화할 수 있으며, 애니메이션 대상으로 CSS 변수를 읽을 수도 있습니다.
+
+#### 애니메이션에서 미리 정의된 CSS 변수 사용하기
+
+HTML `motion` 컴포넌트는 CSS 변수를 대상으로 애니메이션을 적용할 수 있습니다. 단, 해당 변수가 컴포넌트의 조상에 정의되어 있어야 합니다.
+
+```jsx
+<motion.li animate={{ background: "var(--action)" }} />
+```
+
+#### CSS 변수 애니메이션화하기
+
+CSS 변수를 정의하고 애니메이션화함으로써, 부모 `motion` 컴포넌트를 사용하여 여러 DOM 자식을 선언적으로 애니메이션화할 수 있습니다.
+
+CSS 변수는 임의의 타입이므로, Motion은 기본 타입을 추론할 수 없습니다. `rotate`는 Motion이 `deg`로 설정되어야 함을 이해하기 때문에 숫자로 애니메이션화할 수 있지만, `'--rotate'`는 단위 타입(예: `'360deg'`)과 함께 명시적으로 설정되어야 합니다.
+
+```jsx
+<motion.ul
+  initial={{ "--rotate": "0deg" }}
+  animate={{ "--rotate": "360deg" }}
+  transition={{ duration: 2, repeat: Infinity }}
+>
+  <li style={{ transform: "rotate(var(--rotate))" }} />
+  <li style={{ transform: "rotate(var(--rotate))" }} />
+  <li style={{ transform: "rotate(var(--rotate))" }} />
+</motion.ul>
+```
+
+#### SVG 선 그리기
+
+선 그리기 애니메이션은 세 가지 특별한 속성을 사용하여 많은 SVG 요소에서 만들 수 있습니다: `pathLength`, `pathSpacing`, `pathOffset`.
+
+<IFrameEmbed sandboxId="framer-motion-5-1-line-drawing-ph6ln" />
+
+이들은 모두 `0`과 `1` 사이의 값으로 설정되며, `1`은 경로의 측정된 길이입니다.
+
+경로 애니메이션은 `circle`, `ellipse`, `line`, `path`, `polygon`, `polyline`, `rect` 요소와 호환됩니다.
+
+## 커스텀 컴포넌트
+
+`motion.create()` 함수로 래핑하여 모든 컴포넌트를 `motion` 컴포넌트로 만들 수 있습니다.
+
+제공된 컴포넌트는 애니메이션화하려는 DOM 요소에 `ref`를 전달해야 합니다.
+
+또한, `motion.create()`는 React 렌더 함수 내에서 호출되어서는 **안 됩니다**.
+
+```jsx
+const Component = React.forwardRef((props, ref) => <div ref={ref} />);
+
+const MotionComponent = motion.create(Component);
+```
+
+`motion`에 문자열을 전달하여 커스텀 DOM 요소를 만드는 것도 가능합니다.
+
+```jsx
+// HTML에 <custom-element />를 렌더링합니다
+const MotionComponent = motion.create("custom-element");
+```
+
+기본적으로 모든 `motion` 속성(`animate` 등)는 제공된 컴포넌트로 전달되는 `props`에서 필터링됩니다. `forwardMotionProps` 설정을 제공하면, 제공된 컴포넌트가 이러한 속성을 받게 됩니다.
+
+```jsx
+motion.create(Component, { forwardMotionProps: true });
+```
+
+### 성능
+
+Motion은 향상된 성능을 위해 React 렌더 사이클 외부에서 값을 애니메이션화합니다.
+
+상태 대신 `MotionValues`를 사용하여 시각적 속성을 업데이트하면 리렌더링도 방지할 수 있습니다.
+
+가능한 경우, [transform 값](/docs/motion/component/##transform)과 opacity만 애니메이션화하세요. 이들은 GPU 가속을 받습니다. 이렇게 하면 현대적인 모바일 기기에서 수백 개의 레이어를 애니메이션화할 수 있습니다.
+
+```jsx
+// GPU 가속됨 (빠름)
+<motion.div style={{ x: 0 }} animate={{ x: 100 }} />
+
+// CPU 그리기 (느림)
+<motion.div style={{ left: 0 }} animate={{ left: 100 }} />
+```
+
+### 서버사이드 렌더링
+
+`motion` 컴포넌트는 서버사이드 렌더링과 완벽하게 호환되며, 이는 컴포넌트의 초기 상태가 서버에서 생성된 출력에 반영됨을 의미합니다.
+
+```jsx
+// 서버는 `translateX(100px)`를 출력합니다
+<motion.div initial={false} animate={{ x: 100 }} />
+```
+
+#### 예외
+
+다음 SVG 값들은 현재 서버사이드 렌더링과 호환되지 않습니다: `scale`, `rotate`, `pathLength`, `pathOffset`, `pathSpacing`.
+
+`scale`과 `rotate`는 `transformOrigin`의 동적 계산에 의존합니다. `originX`와 `originY`는 이들을 서버 사이드에서 지원하기 위해 문자열(`px` 또는 `%`)로 설정되어야 합니다.
+
+```jsx
+<motion.circle style={{ scale: 2, originX: "100px", originY: "100px" }} />
+```
+
+`path` 값들은 전체 경로 길이의 측정에 의존합니다. `strokeDasharray`를 `"0 1"`로 설정하면 Motion이 측정할 때까지 경로를 숨길 수 있습니다.
+
+```jsx
+<motion.path strokeDasharray="0 1" />
+```
+
+## 속성 (Props)
+
+**참고**: 추가 속성는 [제스처](/docs/animation/gestures)와 [스크롤 애니메이션](/docs/animation/scroll) 페이지에서 찾을 수 있습니다.
+
+### 애니메이션
+
+#### initial: <PropertyType>boolean | Target | VariantLabels</PropertyType>>
+
+시작할 속성, variant 레이블 또는 variant 레이블 배열입니다.
+
+animate의 값으로 초기화하려면 false로 설정하세요. 이는 마운트 애니메이션 비활성화합니다.
+
+```jsx
+// 값으로서
+<motion.div initial={{ opacity: 1 }} />
+
+// variant로서
+<motion.div initial="visible" variants={variants} />
+
+// 여러 variant로서
+<motion.div initial={["visible", "active"]} variants={variants} />
+
+// false로서 (마운트 애니메이션 비활성화)
+<motion.div initial={false} animate={{ opacity: 0 }} />
+```
+
+#### animate: <PropertyType>AnimationControls | TargetAndTransition | VariantLabels | boolean</PropertyType>
+
+애니메이션화할 값, variant 레이블, 또는 `AnimationControls`.
+
+```jsx
+// 값으로
+<motion.div animate={{ opacity: 1 }} />
+
+// variant로
+<motion.div animate="visible" variants={variants} />
+
+// 여러 variant
+<motion.div animate={["visible", "active"]} variants={variants} />
+
+// AnimationControls
+<motion.div animate={animation} />
+```
+
+#### exit: <PropertyType>TargetAndTransition | VariantLabels</PropertyType>
+
+이 컴포넌트가 트리에서 제거될 때 애니메이션화할 대상입니다.
+
+이 exit 애니메이션을 활성화하려면 이 컴포넌트는 `AnimatePresence`의 첫 번째 애니메이션 가능한 자식이어야 합니다.
+
+이 제한은 React가 애니메이션이 완료될 때까지 언마운팅을 지연시키는 것을 허용하지 않기 때문에 존재합니다. 이 제한이 해결되면, `AnimatePresence` 컴포넌트는 불필요해질 것입니다.
+
+```jsx
+import { AnimatePresence, motion } from 'framer-motion'
+
+export const MyComponent = ({ isVisible }) => {
+  return (
+    <AnimatePresence>
+       {isVisible && (
+         <motion.div
+           initial={{ opacity: 0 }}
+           animate={{ opacity: 1 }}
+           exit={{ opacity: 0 }}
+         />
+       )}
+    </AnimatePresence>
+```
+
+#### transition: <PropertyType>Transition</PropertyType>
+
+기본 전환입니다. `animate`에 `transition`이 정의되어 있지 않으면, 여기에 정의된 전환을 사용합니다.
+
+```jsx
+const spring = {
+  type: "spring",
+  damping: 10,
+  stiffness: 100
+}
+
+<motion.div transition={spring} animate={{ scale: 1.2 }} />
+```
+
+#### variants: <PropertyType>Variants</PropertyType>
+
+Variants를 사용하면 애니메이션 상태를 정의하고 이름으로 구성할 수 있습니다. 단일 `animate` 속성을 전환하여 컴포넌트 트리 전체의 애니메이션을 제어할 수 있습니다.
+
+`delayChildren`과 `staggerChildren`과 같은 `transition` 옵션을 사용하여 자식 애니메이션이 부모를 기준으로 언제 재생될지 조율할 수 있습니다.
+
+하나 이상의 `motion` 컴포넌트의 `variants` 속성에 variants를 전달한 후, 이러한 variants는 `animate`, `initial`, `whileFocus`, `whileTap` 및 `whileHover` 속성에서 값 대신 사용될 수 있습니다.
+
+```jsx
+const variants = {
+  active: {
+      backgroundColor: "#f00"
+  },
+  inactive: {
+    backgroundColor: "#fff",
+    transition: { duration: 2 }
+  }
+}
+
+<motion.div variants={variants} animate="active" />
+```
+
+#### style: <PropertyType>MotionStyle</PropertyType>
+
+`MotionValues`와 개별 `transform` 값에 대한 지원이 향상된 React DOM `style` 속성입니다.
+
+```jsx
+export const MyComponent = () => {
+  const x = useMotionValue(0);
+
+  return <motion.div style={{ x, opacity: 1, scale: 0.5 }} />;
+};
+```
+
+### 레이아웃 애니메이션
+
+#### layout: <PropertyType>boolean | "position" | "size"</PropertyType>
+
+`true`로 설정하면, 이 컴포넌트는 레이아웃이 변경될 때 자동으로 새 위치로 애니메이션화됩니다.
+
+이는 성능이 좋은 변환(transforms)을 사용하여 레이아웃 애니메이션을 수행합니다. 이 기술의 일부는 요소의 크기 조절(scale)을 애니메이션화하는 것을 포함합니다. 이는 자식, `boxShadow` 및 `borderRadius`에 시각적 왜곡을 일으킬 수 있습니다.
+
+즉각적인 자식의 왜곡을 수정하려면, 그들에게도 `layout`을 추가하세요.
+
+`boxShadow`와 `borderRadius`는 이 컴포넌트에서 이미 애니메이션화되고 있다면 자동으로 수정됩니다. 그렇지 않다면, `initial` 속성을 통해 직접 설정하세요.
+
+`layout`이 `"position"`으로 설정되면, 위치만 애니메이션화됩니다. 이는 늘어날 때 보기 좋지 않은 텍스트 컴포넌트에 좋습니다.
+
+`layout`이 `"size"`로 설정되면, 크기만 애니메이션화됩니다.
+
+#### layoutId: <PropertyType>string</PropertyType>
+
+layoutId를 가진 컴포넌트가 React 트리에서 제거되었다가 다른 위치에 추가되면, 이전 이전 위치와 최근 애니메이션 값에서 새 위치로 자연스럽게 애니메이션됩니다.
+
+이전 컴포넌트가 트리에 남아있다면 새로운 컴포넌트로 부드럽게 전환됩니다.
+
+```jsx
+{
+  items.map((item) => (
+    <motion.li layout>
+      {item.name}
+      {item.isSelected && <motion.div layoutId="underline" />}
+    </motion.li>
+  ));
+}
+```
+
+#### layoutDependency: <PropertyType>any</PropertyType>
+
+레이아웃 변경은 기본적으로 매 렌더링마다 감지됩니다. 성능을 향상시키기 위해, `layoutDependency`에 값을 전달하여 레이아웃 변경이 발생할 가능성이 있는 시점을 알려줄 수 있습니다.
+
+`motion` 컴포넌트는 전달된 값이 변경되거나, 동일한 `LayoutGroup` 내의 다른 `motion` 컴포넌트의 `layoutDependency`가 변경될 때만 자신을 측정합니다.
+
+#### layoutScroll: <PropertyType>boolean</PropertyType>
+
+스크롤 가능한 요소 내에서 레이아웃 애니메이션이 올바르게 작동하려면, 그들의 스크롤 오프셋을 측정해야 합니다. 성능상의 이유로, Framer Motion은 모든 조상의 스크롤 오프셋을 측정하지 않습니다. 측정되어야 하는 요소에 `layoutScroll` 속성을 추가하세요.
+
+```jsx
+<motion.div layoutScroll style={{ overflow: "scroll" }}>
+  <motion.div layout />
+</motion.div>
+```
+
+#### onLayoutAnimationStart(): <PropertyType>void</PropertyType>
+
+이 컴포넌트에서 레이아웃 애니메이션이 시작될 때 실행될 콜백입니다.
+
+#### onLayoutAnimationComplete(): <PropertyType>void</PropertyType>
+
+이 컴포넌트에서 레이아웃 애니메이션이 완료될 때 실행될 콜백입니다.
+
+### 애니메이션 이벤트
+
+#### onUpdate(<PropertyType>latest</PropertyType>): <PropertyType>void</PropertyType>
+
+최신 motion 값과 함께 프레임당 최대 한 번 실행되는 콜백입니다.
+
+```
+latest: ResolvedValues;
+```
+
+```jsx
+function onUpdate(latest) {
+  console.log(latest.x, latest.opacity);
+}
+
+<motion.div animate={{ x: 100, opacity: 0 }} onUpdate={onUpdate} />;
+```
+
+#### onAnimationStart(): <PropertyType>void</PropertyType>
+
+`animate`에 정의된 애니메이션이 시작될 때 실행되는 콜백입니다.
+
+```jsx
+function onStart() {
+  console.log("Animation started");
+}
+
+<motion.div animate={{ x: 100 }} onAnimationStart={onStart} />;
+```
+
+#### onAnimationComplete(<PropertyType>definition</PropertyType>): <PropertyType>void</PropertyType>
+
+`animate`에 정의된 애니메이션이 완료될 때 실행되는 콜백입니다.
+
+제공된 콜백은 트리거한 애니메이션 정의와 함께 호출됩니다. 이것이 variant인 경우 variant 이름이 될 것이고, target 객체인 경우 target 객체가 될 것입니다.
+
+이렇게 하면 어떤 애니메이션이 완료되었는지 파악할 수 있습니다.
+
+```
+definition: AnimationDefinition;
+```
+
+```jsx
+function onComplete() {
+  console.log("Animation completed");
+}
+
+<motion.div
+  animate={{ x: 100 }}
+  onAnimationComplete={(definition) => {
+    console.log("Completed animating", definition);
+  }}
+/>;
+```
+
+### 제스처
+
+Motion은 React의 기본 이벤트 리스너 세트를 활용하여, 단순하지만 강력한 UI 제스처 인식 기능을 제공합니다.
+
+[자세히 알아보기](/docs/animation/gestures)
+
+### 고급
+
+#### inherit: <PropertyType>boolean</PropertyType>
+
+부모로부터 variant 변경을 상속받지 않도록 하려면 `false`로 설정하세요.
+
+#### custom: <PropertyType>any</PropertyType>
+
+각 애니메이션 컴포넌트에 대해 동적 variants를 다르게 적용하기 위한 커스텀 데이터입니다.
+
+```jsx
+const variants = {
+  visible: (custom) => ({
+    opacity: 1,
+    transition: { delay: custom * 0.2 }
+  })
+}
+
+<motion.div custom={0} animate="visible" variants={variants} />
+<motion.div custom={1} animate="visible" variants={variants} />
+<motion.div custom={2} animate="visible" variants={variants} />
+```
+
+#### transformTemplate (<PropertyType>transform, generatedTransform</PropertyType>): <PropertyType>string</PropertyType>
+
+`x`, `scale` 등과 같은 독립적인 `transforms`를 애니메이션화할 때, Motion은 이러한 변형(transforms)을 기반으로 하여 직관적인 순서로` transform` 스타일을 생성합니다.
+
+`transformTemplate`을 사용하여 다른 순서를 만들거나, 자동으로 생성된 transform 속성을 앞/뒤에 추가할 수 있습니다.
+
+::::note
+transform: <PropertyType>TransformProperties</PropertyType>
+
+최신 애니메이션 transform 속성
+
+:::info
+generatedTransform: <PropertyType>string</PropertyType>
+
+Framer Motion에 의해 자동으로 생성된 transform 문자열
+:::
+
+returns: <PropertyType>string</PropertyType>
+::::
+
+```jsx
+<motion.div
+  style={{ x: 0, rotate: 180 }}
+  transformTemplate={({ x, rotate }) =>
+    `rotate(${rotate}deg) translateX(${x}px)`
+  }
+/>
+```
+
+**참고**: `transformTemplate`은 독립적인 `transforms`에만 적용됩니다. `transform`을 직접 애니메이션화할 때는 아무 효과가 없습니다.
+
+```jsx
+<motion.div
+  animate={{ transform: "translateX(100px)" }}
+  // 효과 없음!
+  transformTemplate={({ x, rotate }) =>
+    `rotate(${rotate}deg) translateX(${x}px)`
+  }
+/>
+```

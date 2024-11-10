@@ -1,0 +1,87 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# LayoutGroup
+
+**레이아웃 애니메이션을 함께 수행해야 하는 motion 컴포넌트들을 그룹화합니다.**
+
+기본적으로 `layout` 속성을 가진 `motion` 컴포넌트들은 React가 렌더링을 완료할 때마다 레이아웃 변경을 감지하고 애니메이션을 적용하려고 시도합니다.
+
+서로 다른 트리에 있는 컴포넌트들이 서로의 레이아웃에 영향을 미치는 경우가 있을 수 있습니다.
+
+```jsx
+function ToggleContent({ header, content }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <motion.div layout onClick={() => setIsOpen(!isOpen)}>
+      <motion.h2 layout>{header}</motion.h2>
+      {isOpen ? content : null}
+    </motion.div>
+  );
+}
+
+function App() {
+  return (
+    <>
+      <ToggleContent />
+      <ToggleContent />
+    </>
+  );
+}
+```
+
+이러한 `ToggleContent` 컴포넌트 중 하나의 상태가 변경되면, 그 형제는 다시 렌더링되지 않으므로 레이아웃 애니메이션을 수행하지 않습니다.
+이는 `LayoutGroup`으로 두 컴포넌트를 그룹화하여 해결할 수 있습니다:
+
+```jsx
+import { LayoutGroup } from "framer-motion";
+
+function App() {
+  return (
+    <LayoutGroup>
+      <ToggleContent />
+      <ToggleContent />
+    </LayoutGroup>
+  );
+}
+```
+
+이제 `LayoutGroup` 내의 하나의 `layout` 컴포넌트가 레이아웃 변경을 감지하고 애니메이션을 적용할 때마다, 모든 컴포넌트가 함께 작동합니다.
+
+## layoutId 네임스페이스
+
+공유 레이아웃 애니메이션을 수행할 것으로 예상되는 컴포넌트들에는 `layoutId` 속성이 제공됩니다.
+
+```jsx
+function Tab({ label, isSelected }) {
+  return (
+    <li>
+      {label}
+      {isSelected ? <motion.div layoutId="underline" /> : null}
+    </li>
+  );
+}
+
+function TabRow({ items }) {
+  return items.map((item) => <Tab {...item} />);
+}
+```
+
+`layoutId`는 전역적이므로, 여러 `TabRow` 인스턴스가 렌더링되면 `layoutId="underline"`을 가진 것 중 하나만 한 번에 렌더링됩니다.
+
+이를 해결하기 위해 `LayoutGroup`에 `id` 속성을 제공하여 그 안의 모든 컴포넌트의 `layoutId`에 네임스페이스를 적용할 수 있습니다.
+
+```jsx
+function App() {
+  return (
+    <LayoutGroup id="top5">
+      <TabRow />
+    </LayoutGroup>
+    <LayoutGroup id="latest">
+      <TabRow />
+    </LayoutGroup>
+  )
+}
+```
