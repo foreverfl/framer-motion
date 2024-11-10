@@ -1,0 +1,256 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# Motion values 개요
+
+**Motion values는 애니메이션 값의 상태와 속도를 추적합니다.**
+
+모든 `motion` 컴포넌트는 내부적으로 `MotionValues`를 사용하여 애니메이팅되는 값의 상태와 속도를 추적합니다.
+
+일반적으로 이러한 값들은 자동으로 생성됩니다. 하지만 고급 사용 사례의 경우 수동으로 생성하여 `motion` 컴포넌트에 제공할 수 있습니다.
+
+```jsx
+import { motion, useMotionValue } from "framer-motion";
+
+export function MyComponent() {
+  const x = useMotionValue(0);
+  return <motion.div style={{ x }} />;
+}
+```
+
+`MotionValues`를 수동으로 생성하면 다음과 같은 작업을 할 수 있습니다:
+
+- 상태를 설정하고 가져올 수 있습니다.
+- 여러 컴포넌트에 전달하여 컴포넌트 간 모션을 동기화할 수 있습니다.
+- `useTransform` 훅을 통해 `MotionValues`를 연결할 수 있습니다.
+- React의 렌더 사이클을 트리거하지 않고 시각적 속성을 업데이트할 수 있습니다.
+- 업데이트를 구독할 수 있습니다.
+
+```jsx
+const x = useMotionValue(0);
+const input = [-200, 0, 200];
+const output = [0, 1, 0];
+const opacity = useTransform(x, input, output);
+
+return <motion.div drag="x" style={{ x, opacity }} />;
+```
+
+## 개요
+
+`MotionValues`는 `useMotionValue` 훅으로 생성할 수 있습니다.
+
+`useMotionValue`에 전달된 값은 `MotionValue`의 초기 상태로 작동합니다.
+
+```jsx
+const x = useMotionValue(0);
+```
+
+`set` 메서드로 업데이트할 수 있습니다. 이는 React 리렌더링을 트리거하지 않습니다.
+
+```jsx
+x.set(100);
+```
+
+`MotionValue`는 **문자열이나 숫자**가 될 수 있습니다. `get` 메서드로 값을 읽을 수 있습니다.
+
+```jsx
+x.get(); // 100
+```
+
+단일 숫자를 포함하는 `MotionValues`는 `getVelocity` 메서드를 통해 속도를 반환할 수 있습니다. 이는 기기 간 프레임 속도 변동을 고려하여 **초당** 계산된 속도를 반환합니다.
+
+```jsx
+x.getVelocity();
+```
+
+`MotionValue`가 색상이나 둘 이상의 숫자를 포함하는 경우 `getVelocity`는 항상 `0`을 반환합니다.
+
+### `MotionValues` 주입
+
+`MotionValue`가 생성되면 일반적으로 시각적 속성을 설정하는 것과 같은 방식으로 `motion` 컴포넌트에 주입할 수 있습니다.
+
+HTML 컴포넌트의 경우 `style` 속성을 통해 주입합니다.
+
+```jsx
+const x = useMotionValue(0);
+
+return <motion.div style={{ x }} />;
+```
+
+SVG 컴포넌트의 경우 속성 자체에 직접 주입합니다.
+
+```jsx
+const cx = useMotionValue(0);
+
+return <motion.circle cx={cx} />;
+```
+
+단일 `MotionValue`를 **하나 이상의 컴포넌트**에 주입할 수 있습니다. `MotionValue`의 변경사항은 모든 컴포넌트에 반영됩니다.
+
+### 변경 사항에 응답하기
+
+`onChange` 메서드를 사용하여 `MotionValues`에 리스너를 추가할 수 있습니다. `onChange`는 구독 해제 메서드를 반환하므로 `useEffect`와 자연스럽게 작동합니다.
+
+```jsx
+useEffect(() => x.onChange((latest) => {}), []);
+```
+
+### MotionValues 구성하기
+
+Framer Motion은 [`useSpring`](/docs/motion-values/use-spring)과 [`useTransform`](/docs/motion-values/use-spring)과 같은 모션 값을 구성하기 위한 여러 훅을 제공합니다.
+
+`useTransform` 훅을 사용하여 최신 값을 부모의 최신 값을 받아 자식을 업데이트하기 전에 변환할 수 있는 업데이트 함수에 전달할 수 있습니다.
+
+```jsx
+const y = useTransform(x, (latest) => latest * 2);
+```
+
+`useTransform`은 또한 선형 숫자 시리즈를 비선형 숫자 시리즈, 색상 또는 복잡한 문자열로 매핑할 수 있는 값 범위를 허용할 수 있습니다.
+
+```jsx
+const xInput = [-100, 0, 100];
+const opacityOutput = [0, 1, 0];
+const colorOutput = ["#f00", "#fff", "#0f0"];
+
+const opacity = useTransform(x, xInput, opacityOutput);
+const color = useTransform(x, xInput, colorOutput);
+```
+
+이러한 자식 컴포넌트는 부모와 정확히 같은 방식으로 사용할 수 있습니다. 동일한 컴포넌트, 다른 컴포넌트 또는 여러 다른 컴포넌트에 전달할 수 있습니다.
+
+## `MotionValue`
+
+MotionValue는 상태에 영향을 미치는 데 사용할 수 있는 다음과 같은 메서드를 가집니다.
+
+#### get(): <PropertyType>V</PropertyType>
+
+`MotionValue`의 최신 상태를 반환합니다.
+
+:::info
+returns: V
+
+`MotionValue`의 최신 상태
+:::
+
+#### getVelocity(): <PropertyType>number</PropertyType>
+
+`MotionValue`의 최신 속도를 반환합니다.
+
+:::info
+returns: number
+
+`MotionValue`의 최신 속도. 상태가 숫자가 아닌 경우 `0`을 반환합니다.
+:::
+
+#### set(newValue): <PropertyType>void</PropertyType>
+
+`MotionValue`를 새 값으로 설정합니다.
+
+```jsx
+const x = useMotionValue(0);
+x.set(10);
+```
+
+#### jump(<PropertyType>newValue</PropertyType>): <PropertyType>void</PropertyType>
+
+`jump`는 이전 값과의 연속성을 끊는 방식으로 `MotionValue`를 설정합니다:
+
+- `velocity`를 `0`으로 재설정합니다
+- 활성 애니메이션을 종료합니다
+- 연결된 효과를 무시합니다 (예: `useSpring`에서 반환된 `MotionValues`에 연결된 스프링)
+
+```jsx
+const x = useSpring(0);
+x.jump(10);
+x.getVelocity(); // 0
+```
+
+#### isAnimating(): <PropertyType>boolean</PropertyType>
+
+이 값이 현재 애니메이션 중인 경우 `true`를 반환합니다.
+
+:::info
+
+returns: boolean
+
+:::
+
+#### stop(): <PropertyType>void</PropertyType>
+
+현재 활성 상태인 애니메이션을 중지합니다.
+
+#### on(<PropertyType>eventName, subscription</PropertyType>): () => <PropertyType>void</PropertyType>
+
+`on`은 `MotionValue`의 이벤트를 구독하는 데 사용됩니다.
+
+```jsx
+x.on("change", (latest) => console.log(latest));
+```
+
+사용 가능한 이벤트는 다음과 같습니다:
+
+- `change`
+- `animationStart`
+- `animationCancel`
+- `animationComplete`
+
+호출되면 리스너의 구독을 해제하는 함수를 반환합니다.
+
+```jsx
+const unsubscribe = x.on("change", (latest) => console.log(latest));
+```
+
+React 컴포넌트 내에서 `on`을 호출할 때는 `useEffect` 훅으로 감싸야 합니다.
+
+:::info
+subscription: `Subscriber<V>`
+
+최신 값을 받는 함수
+
+::::note
+returns: () => void
+
+호출되면 이 구독을 취소하는 함수
+::::
+
+:::
+
+```jsx
+export const MyComponent = () => {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const opacity = useMotionValue(1);
+
+  useEffect(() => {
+    function updateOpacity() {
+      const maxXY = Math.max(x.get(), y.get());
+      const newOpacity = transform(maxXY, [0, 100], [1, 0]);
+      opacity.set(newOpacity);
+    }
+
+    const unsubscribeX = x.on("change", updateOpacity);
+    const unsubscribeY = y.on("change", updateOpacity);
+
+    return () => {
+      unsubscribeX();
+      unsubscribeY();
+    };
+  }, []);
+
+  return <motion.div style={{ x }} />;
+};
+```
+
+또는 `useMotionValueEvent` 훅을 사용하여 이를 자동으로 처리할 수 있습니다.
+
+```jsx
+useMotionValueEvent(x, "change", (latest) => console.log(latest));
+```
+
+#### destroy(): <PropertyType>void</PropertyType>
+
+이 `MotionValue`의 구독자를 제거하고 정리합니다.
+
+`useMotionValue`와 `useTransform`과 같은 `MotionValue` 훅은 반환된 `MotionValue`의 라이프사이클을 자동으로 처리하므로, 이 메서드는 `motionValue` 함수를 통해 `MotionValue`를 수동으로 생성한 경우에만 필요합니다.
