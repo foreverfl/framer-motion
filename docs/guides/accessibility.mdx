@@ -1,0 +1,109 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# 접근성
+
+**Framer Motion으로 접근성 있는 애니메이션을 설계하는 방법.**
+
+애니메이션은 심각한 사용성 문제를 일으킬 수 있으며, 일부 사용자에게는 멀미를 유발할 수도 있습니다.
+
+모든 현대 운영체제는 "모션 감소(Reduced Motion)"라는 설정을 제공합니다. 이를 통해 사용자들은 개인적인 선호도나 멀미 증상 때문에 물리적 움직임을 줄이도록 설정할 수 있습니다.
+
+[A List Apart](https://alistapart.com/article/designing-safer-web-animation-for-motion-sensitivity/)와 [Smashing Magazine](https://www.smashingmagazine.com/2018/04/designing-accessibility-inclusion/)과 같은 사이트에서 이미 접근성 있는 애니메이션을 설계해야 하는 이유와 방법에 대한 훌륭한 가이드가 있습니다. 주요 내용은 "모션 감소"를 활성화한 사용자들을 위해 교육적 전환은 유지하되 멀미 유발 요소를 주의해야 한다는 것입니다. 즉, 큰 요소의 transform 애니메이션을 opacity 전환으로 대체하고, 자동 재생 비디오를 비활성화하며, 패럴랙스 애니메이션을 비활성화해야 합니다.
+
+Framer Motion은 이러한 사용자들의 선호도를 존중하기 쉽게 만드는 API를 제공합니다. 이 가이드에서는 `reducedMotion` 옵션과 `useReducedMotion` 훅을 사용하여 애니메이션을 접근성 있게 만드는 방법을 알아보겠습니다.
+
+## `reducedMotion`
+
+[`reducedMotion`](/) 옵션은 `MotionConfig`에서 설정할 수 있으며, 모션 감소 설정을 어떻게 준수할지 정의합니다.
+
+`reducedMotion`을 `"user"`로 설정하면, 모든 모션 컴포넌트는 자동으로 변형(transform)과 레이아웃 애니메이션을 비활성화하면서 `opacity`와 `backgroundColor` 같은 다른 값들의 애니메이션은 유지합니다.
+
+```jsx
+import { MotionConfig } from "framer-motion";
+
+export function App({ children }) {
+  return <MotionConfig reducedMotion="user">{children}</MotionConfig>;
+}
+```
+
+Framer에서는 `Site Settings > Accessibility`로 이동하여 "Disable transform and layout animations if user prefers reduced motion" 체크박스를 선택하여 설정할 수 있습니다.
+
+추가로, Reduced Motion을 `"always"` 또는 `"never"`로 설정하여 사용자가 해당 사이트에서만 모션 감소를 재정의할 수 있도록 할 수 있습니다.
+
+## `useReducedMotion`
+
+`reducedMotion`이 전체 사이트의 접근성 있는 애니메이션을 보장하는 좋은 도구이지만, `useReducedMotion` 훅을 사용하면 더 맞춤화된 솔루션을 만들 수 있습니다.
+
+이 훅은 방문자가 모션 감소를 활성화했는지 여부에 따라 `true`/`false를` 반환합니다.
+
+```jsx
+import { useReducedMotion } from "framer-motion";
+
+// 컴포넌트 내부에서
+const shouldReduceMotion = useReducedMotion();
+```
+
+이 불리언 값을 사용하여 이 가이드 시작 부분에서 확인된 일반적인 접근성 문제들을 해결할 수 있습니다.
+
+### 전환을 opacity로 대체하기
+
+iOS에서 모션 감소가 활성화되었을 때, 운영체제는 여전히 각 컨텍스트 간의 전환을 돕기 위해 상태 간 애니메이션을 수행합니다. 하지만 기본 scale과 x/y 애니메이션 대신 콘텐츠를 페이드 인/아웃합니다.
+
+Framer Motion에서는 `useReducedMotion`이 `true`를 반환하는지 여부에 따라 다른 값을 `animate`에 전달하여 이를 구현할 수 있습니다.
+
+```jsx
+function Sidebar({ isOpen }) {
+  const shouldReduceMotion = useReducedMotion();
+  let animate;
+
+  if (isOpen) {
+    animate = shouldReduceMotion ? { opacity: 1 } : { x: 0 };
+  } else {
+    animate = shouldReduceMotion ? { opacity: 0 } : { x: "-100%" };
+  }
+
+  return <motion.div animate={animate} />;
+}
+```
+
+### 자동 재생 비디오 비활성화하기
+
+`useReducedMotion`은 Framer Motion에만 호환되는 것이 아닙니다. 단순한 불리언을 반환하므로 배경 `video` 요소의 자동 재생을 비활성화하는 것과 같은 용도로도 사용할 수 있습니다:
+
+```jsx
+function BackgroundVideo() {
+  const shouldReduceMotion = useReducedMotion();
+
+  return <video autoplay={!shouldReduceMotion} />;
+}
+```
+
+### 패럴랙스 애니메이션 비활성화하기
+
+패럴랙스 애니메이션은 멀미를 일으키기 쉬운 사람들에게 매우 불쾌할 수 있습니다.
+
+패럴랙스를 구현하기 위해, 일반적으로 `useViewportScroll`에서 `scrollY`를 가져와서 `useTransform`에 전달하여 새로운 `MotionValue`를 만듭니다. 이는 스크롤 값이 변경될 때 모션 컴포넌트의 `y` 위치를 업데이트합니다.
+
+모션 감소 기기에서 이를 비활성화하기 위해, 이 `MotionValue`를 애니메이션 요소에 조건부로 전달할 수 있습니다.
+
+```jsx
+function Parallax() {
+  const shouldReduceMotion = useReducedMotion();
+  const { scrollY } = useViewportScroll();
+
+  const y = useTransform(scrollY, [0, 1], [0, -0.2], {
+    clamp: false,
+  });
+
+  return <motion.div style={{ y: shouldReduceMotion ? 0 : y }} />;
+}
+```
+
+## 결론
+
+Framer Motion으로 사용자들의 모션 감소 설정을 존중하는 방법을 배웠습니다. `reducedMotion` 옵션은 전체 사이트에 걸쳐 구현하기 쉽게 만들어주며, `useReducedMotion`은 모든 React API와 함께 맞춤형 접근성 전략을 만드는 데 도움이 될 수 있습니다.
+
+추후에는 `reducedMotion="user"`를 기본값으로 설정하고 싶습니다. 애니메이션 접근성에 미치는 영향을 개선할 수 있는 방법에 대한 의견이 있다면 [Twitter](https://x.com/framer)를 통해 알려주세요.

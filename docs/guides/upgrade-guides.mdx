@@ -1,0 +1,332 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# 업그레이드 가이드
+
+**Framer Motion의 최신 버전으로 업그레이드하는 방법.**
+
+우리는 주요 변경사항을 최소한으로 유지하려고 노력합니다. Framer Motion `1.0`용으로 작성된 코드는 대개 최신 버전과 호환되며, 주요 변경사항은 매우 국소적인 경우가 많습니다.
+
+업그레이드하는 가장 쉬운 방법은 현재 사용 중인 버전에서 시작하여 다음 주 버전으로 가이드를 따라가는 것이며, 최신 버전에 도달할 때까지 이를 반복하는 것입니다. 주 버전 간의 변경사항은 일반적으로 매우 작으므로 대부분의 경우 빠른 프로세스가 될 것입니다.
+
+## 11.0
+
+### 속도 계산 변경사항
+
+이전 버전에서는 동일한 애니메이션 프레임 내에서 `MotionValue`를 여러 번 설정하면 값의 속도가 업데이트되었습니다:
+
+```jsx
+const x = motionValue(0);
+
+requestAnimationFrame(() => {
+  x.set(100);
+  x.getVelocity(); // 0 -> 100의 속도
+  x.set(200);
+  x.getVelocity(); // 100 -> 200의 속도
+});
+```
+
+이 동작은 올바르지 않습니다. 애니메이션 목적상 동기 코드는 실질적으로 즉각적인 것으로 간주되어야 합니다. 따라서 위의 예시에서 `x`는 무한히 작은 시간 동안만 `100`이었습니다. 본질적으로 그것은 전혀 일어나지 않은 것과 마찬가지입니다.
+
+버전 11부터는 동기 코드 블록 내의 연속적인 값 업데이트가` MotionValue`의 속도 계산의 일부로 고려되지 않습니다. 따라서 두 번째 업데이트 후에 `getVelocity`가 호출되면, 속도는 최신 값과 이전 프레임 끝의 값 사이에서 계산됩니다.
+
+```jsx
+const x = motionValue(0);
+
+requestAnimationFrame(() => {
+  x.set(100);
+  x.getVelocity(); // 0 -> 100의 속도
+  x.set(200);
+  x.getVelocity(); // 0 -> 200의 속도
+});
+```
+
+### 렌더링 스케줄링 변경사항
+
+이전 버전에서는 동적으로 계산된 값이 화면에서 업데이트되도록 하기 위해 `motion` 컴포넌트가 마운트 후에 동기적으로 렌더링을 트리거했습니다. 이 프로세스는 이제 [마이크로태스크](https://developer.mozilla.org/en-US/docs/Web/API/queueMicrotask)로 이동되었습니다.
+
+이는 컴포넌트가 `useLayoutEffect`에 의해 동기적으로 다시 렌더링되는 경우, 첫 번째 렌더링은 무시되고 마지막 렌더링(화면에서 사용될 렌더링)만 적용되도록 보장합니다.
+
+이는 성능 면에서 더 좋으며 대부분의 경우 개발자에게 실질적인 영향을 미치지 않을 것입니다. 하지만 Jest 테스트에 대한 주의사항이 있습니다. 이전에는 업데이트가 동기적으로 적용될 것이라고 가정할 수 있었습니다.
+
+```jsx
+render(
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ false }}
+  />
+)
+
+expect(element).toHaveStyle("opacity: 1")
+```
+
+이러한 테스트는 애니메이션 프레임을 기다리도록 업데이트되어야 합니다.
+
+```jsx
+render(
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ false }}
+  />
+)
+
+await nextFrame()
+
+expect(element).toHaveStyle("opacity: 1")
+
+// utils.js
+import { frame } from "framer-motion"
+
+export async function nextFrame() {
+    return new Promise<void>((resolve) => {
+        frame.postRender(() => resolve())
+    })
+}
+```
+
+## 10.0
+
+### `IntersectionObserver` 폴백
+
+이 버전은 `whileInView`의 `IntersectionObserver` 폴백 동작을 제거합니다.
+
+`IntersectionObserver`는 모든 현대 브라우저에서 지원되며, 이는 [Framer](https://framer.com/projects/?teamId=8c634274-ae7e-4aa5-8bec-b21c62d30647)에서 제작된 사이트 방문자의 99% 이상이 이를 사용함을 의미합니다. Internet Explorer나 Safari 12와 같은 레거시 브라우저 지원이 필요한 경우, `IntersectionObserver` 폴리필 추가를 권장합니다.
+
+### `AnimatePresence exitBeforeEnter` 속성
+
+이 속성은 `7.2.0`에서 deprecated되었습니다. 사용하면 이제 업그레이드 지침(`mode="wait"`로 변경)과 함께 오류가 발생합니다.
+
+## 9.0
+
+이 버전은 **tap 이벤트를 키보드로 접근 가능하게 만듭니다**.
+
+결과적으로, tap 리스너나 `whileTap`이 있는 모든 요소는 `tabindex="0"`을 받게 됩니다. 이 동작을 되돌리는 것은 권장되지 않지만, `tabIndex={-1}`을 전달하여 달성할 수 있습니다.
+
+추가로, `whileFocus`는 이제 `:focus` 대신 `:focus-visible`처럼 작동합니다. 대략적으로 말하면, 이는 포인터를 통해 포커스를 받는 요소는 포커스 애니메이션을 트리거하지 않지만, 입력 요소의 경우 모든 입력에서 포커스를 트리거한다는 것을 의미합니다.
+
+## 8.0
+
+Framer Motion은 tap, drag, hover 제스처를 감지하기 위해 pointer 이벤트를 사용합니다. 이전 버전에서는 레거시 브라우저에서 mouse와 touch 이벤트로 폴리필되었습니다. 버전 8은 이 폴리필을 제거합니다.
+
+결과적으로, [DragControls.start](/)는 항상 `onPointerDown`의 이벤트에서만 작동하도록 문서화되었지만, `onMouseDown`과 `onTouchStart` 이벤트도 받아들이도록 **타입이 지정되어** 있었습니다. 이제 TypeScript 사용자에게 타입 에러가 발생할 것이며 `onPointerDown`으로 변환해야 합니다.
+
+## 7.0
+
+Framer Motion 7은 `react@18`을 최소 지원 버전으로 합니다.
+
+Framer Motion 3D 사용자는 [React Three Fiber](https://docs.pmnd.rs/react-three-fiber/tutorials/v8-migration-guide)도 `^8.2.2`로 업그레이드해야 합니다.
+
+## 6.0
+
+Framer Motion 3D는 이제 `framer-motion-3d` 패키지에 있습니다. 따라서 `6.0`으로 업그레이드하려면 단순히 `"framer-motion/three"`에서 `"framer-motion-3d"`로 import를 변경하면 됩니다.
+
+## 5.0
+
+### 공유 레이아웃 애니메이션
+
+Framer Motion 5는 `AnimateSharedLayout` 컴포넌트를 제거합니다.
+
+이제 `layoutId` 속성을 사용할 수 있으며, `AnimateSharedLayout` 래퍼 없이도 컴포넌트들이 서로 간에 애니메이션될 것입니다.
+
+### 레이아웃 변경 측정
+
+레이아웃 변경은 `layout` 또는 `layoutId` 속성이 있는 컴포넌트가 다시 렌더링될 때 감지됩니다. 하지만 하나가 변경될 때 모든 컴포넌트를 측정하는 것은 성능적으로 좋지 않습니다.
+
+`AnimateSharedLayout`은 서로의 레이아웃에 영향을 미치는 컴포넌트들을 그룹화하는 데 사용될 수 있었습니다. 하나가 다시 렌더링되면, `AnimateSharedLayout`은 모두 다시 렌더링하도록 강제했습니다.
+
+이는 모든 그룹화된 컴포넌트가 다시 렌더링을 수행해야 했기 때문에 성능적으로 좋은 접근 방식이 아니었습니다. 이제 서로의 레이아웃에 영향을 미치는 컴포넌트들은 [LayoutGroup](/)으로 그룹화할 수 있습니다:
+
+```jsx
+import { LayoutGroup, motion } from "framer-motion";
+
+export function App() {
+  return (
+    <LayoutGroup>
+      <Submenu />
+      <Submenu />
+    </LayoutGroup>
+  );
+}
+
+function Submenu({ children }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <motion.ul layout style={{ height: isOpen ? "auto" : 40 }}>
+      {children}
+    </motion.ul>
+  );
+}
+```
+
+그룹화된 컴포넌트들은 그 중 하나가 렌더링될 때마다 측정되지만, 스스로 렌더링하도록 강제되지는 않을 것입니다.
+
+### 범위가 지정된 레이아웃 애니메이션
+
+이전에는 `AnimateSharedLayout`이 필요했기 때문에, 자연스럽게 공유 레이아웃 애니메이션의 범위가 지정되었습니다. 따라서 동일한 `layoutId`를 가진 컴포넌트 간의 애니메이션은 동일한 `AnimateSharedLayout` 내에서만 발생했습니다:
+
+```jsx
+/**
+ * 이 아이템들은 동일한 layoutId를 공유하지만 서로 다른
+ * AnimateSharedLayout 컴포넌트의 자식이기 때문에 서로 간에
+ * 애니메이션이 발생하지 않습니다.
+ */
+<AnimateSharedLayout>
+  {isVisible ? <motion.div layoutId="modal" /> : null}
+</AnimateSharedLayout>
+<AnimateSharedLayout>
+  {isVisible ? <motion.div layoutId="modal" /> : null}
+</AnimateSharedLayout>
+```
+
+이는 매우 나쁜 성능으로 이어질 수 있었습니다. `AnimateSharedLayout`은 레이아웃 측정을 일괄 처리하여 내부의 레이아웃 스래싱을 줄입니다. 하지만 여러 `AnimateSharedLayout` 컴포넌트 간의 일괄 처리를 할 방법이 없었습니다. 더 많이 추가할수록 더 많은 레이아웃 스래싱이 발생할 것입니다.
+
+이제 앱 전체에 걸쳐 하나의 전역 트리가 있으므로 모든 레이아웃 측정이 일괄 처리됩니다. 하지만 이는 모든 `layoutId`가 동일한 전역 컨텍스트를 공유한다는 것을 의미합니다. 이전 동작을 되돌리려면 `LayoutGroup`에 `id` 속성을 제공하여 `layoutId`의 네임스페이스를 지정할 수 있습니다:
+
+```jsx
+/**
+ * 이제 이 layoutId들은 LayoutGroup에 제공된
+ * id로 네임스페이스가 지정됩니다.
+ */
+<LayoutGroup id="a">
+  {isVisible ? <motion.div layoutId="modal" /> : null}
+</LayoutGroup>
+<LayoutGroup id="b">
+ {isVisible ? <motion.div layoutId="modal" /> : null}
+</LayoutGroup>
+```
+
+### 드래그하여 재정렬
+
+이전의 드래그하여 재정렬 구현은 임시방편이었으며, 일반적으로 (이제 제거된) `onViewportBoxUpdate` 속성에 의존하는 오래된 개념 증명용 테스트 환경에서 가져온 것이었습니다. 이러한 솔루션은 [새로운 Reorder 컴포넌트](/)로 재구현되어야 합니다.
+
+### ESM과 `create-react-app`
+
+Framer에서 프로덕션으로 바로 no-code 컴포넌트를 게시할 수 있게 해주는 새로운 [Handshake](/) 기능을 활성화하기 위해, Framer Motion을 ESM 모듈로 이동했습니다. `create-react-app`과 같은 일부 빌드 환경에서는 ES 모듈(Framer Motion과 같은)과 CJS 모듈(React와 같은)을 혼합하는 데 문제가 있을 수 있습니다.
+
+해결하려면 `create-react-app@next`로 업그레이드하거나 `framer-motion@4.1.17`로 다운그레이드하세요.
+
+## 4.0
+
+Framer Motion 4는 번들 크기를 줄이는데 도움이 되는 새로운 `LazyMotion` 컴포넌트를 도입합니다.
+
+이전에는 `MotionConfig`의 `features` 속성을 통해 `motion` 기능의 하위 집합을 동기적으로 또는 비동기적으로 로드할 수 있었습니다. 이 기능은 새로운 `LazyMotion` 컴포넌트를 선호하여 제거되었습니다.
+
+이 새로운 API를 사용하는 방법은 번들 크기 줄이기 가이드를 확인하세요.
+
+```jsx
+import { LazyMotion, domAnimation, m } from "framer-motion";
+
+export const MyComponent = ({ isVisible }) => (
+  <LazyMotion features={domAnimation}>
+    <m.div animate={{ opacity: 1 }} />
+  </LazyMotion>
+);
+```
+
+### 기타 주요 변경사항
+
+`4`는 또한 이전에 `motion()` 대신 deprecated된 `motion.custom()`을 제거합니다.
+
+`motion.custom()`은 기본적으로 Framer Motion의 모든 속성을 기본 컴포넌트로 전달하는 기본 동작을 가지고 있었습니다. 이를 복제하려면 `forwardMotionProps` 옵션을 사용할 수 있습니다.
+
+```jsx
+const MotionComponent = motion(Component, {
+  forwardMotionProps: true,
+});
+```
+
+## 3.0
+
+Framer Motion 3는 주요 릴리스이지만 변경사항의 유형이 매우 특정적이고 매우 작습니다. 가능성은 낮지만 애니메이션이 작동하는 방식이 변경될 수 있습니다.
+
+### 변경되는 동작
+
+Motion 3는 애니메이션 상태가 계산되는 방식의 중앙화를 특징으로 합니다.
+
+이제 모든 애니메이션 속성은 우선순위 측면에서 순위가 매겨집니다(왼쪽이 가장 낮고, 오른쪽이 가장 높음).
+
+이러한 속성 중 하나가 변경되거나 활성화/비활성화되면, 필요한 애니메이션을 다시 계산합니다. 이는 `while` 속성에 대해서만 부분적으로 구현되었던 동작의 확장과 코드화로, 더 일관되고 예측 가능한 경험을 제공합니다.
+
+```jsx
+const priority = ["animate", "while-", "exit"];
+```
+
+### 애니메이션 값 제거
+
+**이전에는** 값이 애니메이션 속성에서 완전히 제거되면 아무 일도 일어나지 않았습니다.
+
+**이제** 값이 제거되면, 다음으로 높은 우선순위의 애니메이션 상태에서 해당 값을 확인합니다. 예를 들어, `whileHover`에서 `opacity`가 제거되면, Motion은 `animate`에서 이를 확인하고 그것으로 애니메이션을 수행합니다.
+
+`animate`에서 찾지 못하면, `style`에서 확인하거나 초기에 기록된 값으로 폴백합니다(예를 들어 값이 명시적으로 정의되지 않았기 때문에 처음에 DOM에서 읽혀진 경우).
+
+## 2.0
+
+Framer Motion 2는 주요 릴리스이며 이는 API 변경을 의미합니다. 이 가이드에서는 코드가 계속 예상대로 작동하도록 업그레이드하는 방법을 살펴보고, Motion의 새 버전에서 작동하지 않을 일부 기능을 강조하겠습니다.
+
+### 레이아웃 애니메이션
+
+Framer Motion 1은 레이아웃 애니메이션을 수행하는 `positionTransition`과 `layoutTransition` 속성의 두 가지 방법을 지원했습니다.
+
+```jsx
+// 이전
+<motion.div layoutTransition />
+```
+
+Framer Motion 2에서는 이 둘 모두 `layout` 속성으로 대체되었습니다.
+
+```jsx
+// 이후
+<motion.div layout />
+```
+
+두 이전 속성 모두 인수로 transition을 받았습니다.
+
+```jsx
+// 이전
+<motion.div layoutTransition={{ duration: 2 }} />
+```
+
+이제 레이아웃 애니메이션은 다른 애니메이션과 동일한 기본 `transition` 속성을 사용합니다.
+
+```jsx
+// 이후
+<motion.div layout transition={{ duration: 2 }} />
+```
+
+Framer Motion 1에서는 크기가 변경되는 컴포넌트의 `borderRadius`와 `boxShadow` 속성이 레이아웃 애니메이션에 의해 왜곡될 수 있었습니다. 이제는 두 속성 중 하나가 애니메이션되면 이 문제가 해결됩니다.
+
+```jsx
+<motion.div layout initial={{ borderRadius: 20 }} />
+```
+
+크기를 변경하는 레이아웃 애니메이션은 자식 컴포넌트도 왜곡시킬 수 있었습니다. 이제는 자식 컴포넌트에도 `layout` 속성을 제공하여 이를 수정할 수 있습니다.
+
+스케일에 대해서는 직계 자식만 수정하면 됩니다.
+
+```jsx
+<motion.div layout>
+  <motion.div layout />
+</motion.div>
+```
+
+### 주요 변경사항
+
+업그레이드하기 전에 알아야 할 즉각적인 해결책이 없는 몇 가지 변경사항이 있습니다.
+
+#### 드래그
+
+두 기능이 완전히 호환되도록 하기 위해 드래그는 Motion 2의 레이아웃 애니메이션을 구동하는 것과 동일한 레이아웃 프로젝션 렌더링 방법론을 사용하도록 리팩터링되었습니다.
+
+이로 인해 몇 가지 주요 변경사항이 발생했습니다:
+
+- 드래그 리스너(`onDrag`와 같은)는 이제 Motion의 다른 포인터 제스처와 일치하도록 뷰포트를 기준으로 한 포인트를 보고합니다.
+- `dragOriginX`와 `dragOriginY`가 제거되었습니다. 이들은 `positionTransition`을 드래그와 호환되게 만드는 임시방편으로 추가되었지만, `layout`은 기본적으로 드래그와 호환됩니다.
+
+#### useAnimatedState
+
+`useAnimatedState` API는 Framer X에서 사용하기 위한 실험적이고 문서화되지 않은 API였습니다. 이제 이것은 제거되었습니다.

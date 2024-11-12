@@ -1,0 +1,129 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# 번들 사이즈 줄이기
+
+**Motion의 번들 사이즈를 구성하는 요소와 이를 줄이는 방법에 대해 알아보겠습니다.**
+
+훌륭한 웹 경험은 아름답게 보이고 움직일 뿐만 아니라, 빠르게 로드되어야 합니다.
+
+[Bundlephobia](https://bundlephobia.com/package/framer-motion@7.2.0)와 같은 번들 분석 웹사이트를 사용하여 Framer Motion의 gzip 및 minified 사이즈를 측정할 때, **50kb** 이상과 같은 큰 숫자를 볼 수 있습니다!
+
+이는 오해의 소지가 있습니다. Framer Motion은 많은 함수를 내보내지만, 대부분은 여러분이 import하지 않을 것입니다. [Rollup](https://rollupjs.org/)과 [Webpack](https://webpack.js.org/) 같은 JavaScript 번들러는 "[트리 셰이킹](https://developer.mozilla.org/ko/docs/Glossary/Tree_shaking)"이 가능하며, 이는 import한 코드만 사용자에게 전달된다는 것을 의미합니다.
+
+`useReducedMotion`과 같은 단 하나의 작은 훅만 사용할 수도 있습니다. 이 경우 사이즈는 **1kb**에 가깝습니다.
+
+그럼에도 불구하고, 핵심 API는 `motion` 컴포넌트입니다. 선언적이고 속성(props) 기반의 API 특성 때문에, 번들러가 **34kb**보다 더 작게 트리 셰이킹하는 것은 불가능합니다.
+
+하지만 `m`과 `LazyMotion` 컴포넌트를 사용하면 이를 상당히 줄일 수 있으며, 초기 렌더링 시 약 **5.5kb**까지 줄일 수 있습니다.
+
+그런 다음 lazy-loading을 사용하여 사이트가 렌더링된 후에 애니메이션과 인터랙션을 로딩하도록 지연시킬 수 있습니다.
+
+**참고**: 이 가이드에서 인용된 모든 크기는 Rollup으로 생성된 번들 기준입니다. Webpack은 트리 셰이킹이 덜 효과적이므로 약간 더 큰 번들이 생성될 수 있습니다.
+
+## `motion` 컴포넌트의 크기를 줄이는 방법
+
+`motion` 대신 더 가벼운 `m` 컴포넌트를 import 하세요.
+
+```jsx
+// React
+import { m } from "framer-motion";
+
+// React Server Components
+import * as m from "framer-motion/m";
+```
+
+`m`은 `motion`과 정확히 같은 방식으로 사용되지만, `motion`과 달리 `m` 컴포넌트는 애니메이션, 레이아웃 애니메이션 또는 드래그 제스처와 같은 기능이 미리 로드되어 있지 않습니다.
+
+대신 `LazyMotion` 컴포넌트를 통해 이러한 기능을 수동으로 로드합니다. 이를 통해 어떤 기능을 로드할지, 그리고 메인 번들의 일부로 로드할지 또는 지연 로드할지 선택할 수 있습니다.
+
+```jsx
+import { LazyMotion, domAnimations } from "framer-motion";
+
+// domAnimation 패키지만 로드
+function App({ children }) {
+  return <LazyMotion features={domAnimations}>{children}</LazyMotion>;
+}
+```
+
+## 사용 가능한 기능
+
+현재 로드할 수 있는 두 가지 기능 패키지가 있습니다:
+
+- `domAnimation`: 애니메이션, variants, exit 애니메이션, tap/hover/focus 제스처에 대한 지원을 제공합니다. (**+15kb**)
+- `domMax`: 위의 모든 기능과 함께 pan/drag 제스처 및 레이아웃 애니메이션에 대한 지원을 제공합니다. (**+25kb**)
+
+향후에는 더 세분화된 기능 패키지를 제공할 수 있을 것입니다. 하지만 현재는 기능 간 중복을 줄이기 위해 이렇게 선택되었으며, 이는 결과적으로 더 많은 데이터가 다운로드되는 것을 방지할 수 있습니다.
+
+## 동기 로딩
+
+이러한 기능 패키지 중 하나를 `LazyMotion`에 전달하면 메인 JavaScript 번들에 포함됩니다.
+
+```jsx
+import { LazyMotion, domAnimation } from "framer-motion";
+
+function App({ children }) {
+  return <LazyMotion features={domAnimation}>{children}</LazyMotion>;
+}
+```
+
+## 지연 로딩
+
+Webpack이나 Rollup과 같은 번들러를 사용하는 경우, 초기 렌더링을 수행한 후에만 기능을 가져오는 동적 import 함수를 `features`에 전달할 수 있습니다.
+
+먼저 로드하려는 기능만 내보내는 파일을 만듭니다.
+
+```jsx
+// features.js
+import { domMax } from "framer-motion";
+export default domMax;
+```
+
+그런 다음 해당 파일을 동적으로 로드하는 함수를 `features`에 전달합니다.
+
+```jsx
+import { LazyMotion, m } from "framer-motion";
+
+// 기능 번들이 포함된 특정 내보내기를 반환해야 합니다.
+const loadFeatures = () => import("./features.js").then((res) => res.default);
+
+// 이 애니메이션은 loadFeatures가 해결되면 실행됩니다.
+function App() {
+  return (
+    <LazyMotion features={loadFeatures}>
+      <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
+    </LazyMotion>
+  );
+}
+```
+
+## 개발자 도구
+
+일반 `motion` 컴포넌트는 여전히 모든 기능을 미리 로드하므로, 어디에서든 이를 포함하면 `LazyMotion` 사용의 이점이 사라집니다.
+
+이를 방지하기 위해 `LazyMotion`에 `strict` 속성을 설정할 수 있습니다. 내부에서 `motion` 컴포넌트가 로드되면 `m` 컴포넌트를 대신 렌더링하라는 알림과 함께 오류가 발생합니다.
+
+```jsx
+function App() {
+  // 이는 오류를 발생시킵니다!
+  return (
+    <LazyMotion strict>
+      <motion.div />
+    </LazyMotion>
+  );
+}
+```
+
+## 커스텀 `m` 컴포넌트
+
+HTML/SVG 컴포넌트에만 국한되지 않습니다. `m.create()`를 사용하여 커스텀 m 컴포넌트를 만들 수 있습니다.
+
+제공된 컴포넌트는 애니메이션을 적용하려는 DOM 엘리먼트에 `ref`를 전달해야 합니다. `m.create()`는 렌더 함수 내에서 호출될 수 없습니다.
+
+```jsx
+const Component = React.forwardRef((props, ref) => <div ref={ref} />);
+
+const MotionComponent = m.create(Component);
+```
