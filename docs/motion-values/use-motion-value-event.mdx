@@ -1,0 +1,67 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# useMotionValueEvent
+
+`useMotionValueEvent`는 React 컴포넌트의 생명주기 전반에 걸쳐 motion value 이벤트 핸들러를 관리합니다.
+
+```jsx
+function Component() {
+  const x = useMotionValue(0);
+  useMotionValueEvent(x, "animationStart", () => {
+    console.log("animation started on x");
+  });
+  useMotionValueEvent(x, "change", (latest) => {
+    console.log("x changed to", latest);
+  });
+  return <motion.div style={{ x }} />;
+}
+```
+
+컴포넌트가 언마운트되면 이벤트 핸들러가 안전하게 정리됩니다.
+
+## 사용법
+
+Motion에서 임포트하세요:
+
+```jsx
+import { useMotionValueEvent } from "motion/react";
+```
+
+motion value에 이벤트 리스너를 추가하려면 값, 이벤트 이름, 콜백을 제공하세요:
+
+```jsx
+const color = useMotionValue("#00f");
+
+useMotionValueEvent(color, "change", (latest) => {
+  console.log(latest);
+});
+```
+
+사용 가능한 이벤트는 다음과 같습니다:
+
+- `change`
+- `animationStart`
+- `animationComplete`
+- `animationCancel`
+
+`"change"` 이벤트는 motion value의 최신 값을 제공받습니다.
+
+### 고급
+
+`useMotionValueEvent`는 motion value의 [`on` 메서드](/docs/motion-values/overview)를 위한 헬퍼 함수입니다. `on`을 사용하면 이벤트 핸들러 내에서와 같이 원하는 때에 이벤트 수신을 시작할 수 있습니다. 하지만 컴포넌트가 언마운트될 때 구독을 해제하는 것을 잊지 마세요.
+
+```jsx
+useEffect(() => {
+  const doSomething = () => {};
+  const unsubX = x.on("change", doSomething);
+  const unsubY = y.on("change", doSomething);
+
+  return () => {
+    unsubX();
+    unsubY();
+  };
+}, [x, y]);
+```

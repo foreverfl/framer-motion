@@ -1,0 +1,47 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# useMotionTemplate
+
+`useMotionTemplate`은 다른 motion values를 포함하는 [문자열 템플릿](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Template_literals)으로부터 새로운 [motion value](/docs/motion-values/overview)를 생성합니다.
+
+```jsx
+const x = useMotionValue(100);
+const transform = useMotionTemplate`transform(${x}px)`;
+```
+
+문자열 템플릿 내의 motion value가 업데이트될 때마다, 반환된 motion value는 최신 값으로 업데이트됩니다.
+
+## 사용법
+
+Motion에서 임포트하세요:
+
+```jsx
+import { useMotionTemplate } from "motion/react";
+```
+
+`useMotionTemplate`은 "태그된 템플릿"이므로, 일반 함수처럼 호출되는 대신 문자열 템플릿으로 호출됩니다:
+
+```jsx
+useMotionValue``;
+```
+
+이 문자열 템플릿은 텍스트와 다른 motion values 모두를 받을 수 있습니다:
+
+```jsx
+const blur = useMotionValue(10);
+const saturate = useMotionValue(50);
+const filter = useMotionTemplate`blur(${10}px) saturate(${saturate}%)`;
+return <motion.div style={{ filter }} />;
+```
+
+반환된 motion value의 최신 값은 제공된 각 motion value가 해당하는 최신 값으로 대체된 문자열 템플릿이 됩니다.
+
+```jsx
+const shadowX = useSpring(0);
+const shadowY = useMotionValue(0);
+const filter = useMotionTemplate`drop-shadow(${shadowX}px ${shadowY}px 20px rgba(0,0,0,0.3))`;
+return <motion.div style={{ filter }} />;
+```

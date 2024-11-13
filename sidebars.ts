@@ -5,22 +5,26 @@ const sidebars: SidebarsConfig = {
     {
       type: "category",
       label: "시작하기",
-      items: ["getting-started/introduction", "getting-started/examples"],
+      items: ["introduction/quick-start", "introduction/examples"],
       collapsed: false,
     },
     {
       type: "category",
       label: "애니메이션",
       items: [
-        "animation/overview",
+        {
+          type: "doc",
+          id: "animation/overview",
+          label: "개요",
+        },
+        "animation/transition",
+        "animation/gestures",
+        "animation/scroll",
         {
           type: "doc",
           id: "animation/layout",
           label: "레이아웃",
         },
-        "animation/gestures",
-        "animation/scroll",
-        "animation/transition",
       ],
       collapsed: false,
     },
@@ -28,11 +32,15 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "컴포넌트",
       items: [
-        "components/motion",
-        "components/animate-presence",
-        "components/layout-group",
-        "components/lazy-motion",
+        {
+          type: "doc",
+          id: "components/motion",
+          label: "motion",
+        },
         "components/motion-config",
+        "components/animate-presence",
+        "components/lazy-motion",
+        "components/layout-group",
         "components/reorder",
       ],
       collapsed: false,
@@ -41,7 +49,11 @@ const sidebars: SidebarsConfig = {
       type: "category",
       label: "Motion Values",
       items: [
-        "motion-values/overview",
+        {
+          type: "doc",
+          id: "motion-values/overview",
+          label: "개요",
+        },
         "motion-values/use-motion-value-event",
         "motion-values/use-motion-template",
         "motion-values/use-scroll",
@@ -66,32 +78,6 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "범용 기능",
-      items: [
-        "universal/animate",
-        "universal/scroll",
-        "universal/in-view",
-        "universal/mix",
-        "universal/transform",
-        "universal/stagger",
-        "universal/frame",
-        "universal/easing-functions",
-      ],
-      collapsed: false,
-    },
-    {
-      type: "category",
-      label: "3D",
-      items: [
-        "3d/introduction",
-        "3d/layout-camera",
-        "3d/layout-orthographic-camera",
-        "3d/motion-canvas",
-      ],
-      collapsed: false,
-    },
-    {
-      type: "category",
       label: "가이드",
       items: [
         "guides/accessibility",
@@ -102,18 +88,11 @@ const sidebars: SidebarsConfig = {
     },
     {
       type: "category",
-      label: "커뮤니티",
+      label: "React Three Fiber",
       items: [
-        {
-          type: "link",
-          label: "GitHub",
-          href: "https://github.com/framer/motion",
-        },
-        {
-          type: "link",
-          label: "Discord",
-          href: "https://www.framer.com/r/discord/",
-        },
+        "react-three-fiber/overview",
+        "react-three-fiber/motion-canvas",
+        "react-three-fiber/layout-camera",
       ],
       collapsed: false,
     },

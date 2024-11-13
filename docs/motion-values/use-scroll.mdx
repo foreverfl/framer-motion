@@ -1,0 +1,168 @@
+import IFrameEmbed from "@/components/HomepageFeatures/IFrameEmbed";
+import PropertyType from "@/components/HomepageFeatures/PropertyType";
+import YoutubeEmbed from "@/components/HomepageFeatures/YoutubeEmbed";
+import React from "react";
+
+# useScroll
+
+`useScroll`은 진행 표시기와 패럴랙스 효과와 같은 스크롤 연동 애니메이션을 만드는 데 사용됩니다.
+
+```jsx
+const { scrollYProgress } = useScroll();
+return <motion.div style={{ scaleX: scrollYProgress }} />;
+```
+
+## 사용법
+
+Motion에서 `useScroll`을 임포트하세요:
+
+```jsx
+import { useScroll } from "motion/react";
+```
+
+`useScroll`은 네 개의 [motion values](/docs/motion-values/overview)를 반환합니다:
+
+- `scrollX`/`Y`: 절대 스크롤 위치(픽셀 단위)
+- `scrollXProgress`/`YProgress`: 정의된 오프셋 사이의 스크롤 위치(`0`과 `1` 사이의 값)
+
+### 페이지 스크롤
+
+기본적으로 useScroll은 페이지 스크롤을 추적합니다.
+
+```jsx
+const { scrollY } = useScroll();
+
+useMotionValueEvent(scrollY, "change", (latest) => {
+  console.log("Page scroll: ", latest);
+});
+```
+
+예를 들어, `scrollYProgress`를 진행 표시줄의 `scaleX` 스타일에 직접 전달하여 페이지 스크롤 표시기를 표시할 수 있습니다.
+
+```jsx
+const { scrollYProgress } = useScroll();
+return <motion.div style={{ scaleX: scrollYProgress }} />;
+```
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-xwdxbt" />
+
+`useScroll`은 motion values를 반환하므로, 이 스크롤 정보를 `useTransform`과 `useSpring` 같은 다른 motion value 훅과 조합할 수 있습니다:
+
+```jsx
+const { scrollYProgress } = useScroll();
+const scaleX = useSpring(scrollYProgress);
+return <motion.div style={{ scaleX }} />;
+```
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-with-spring-smoothing-75rw1l" />
+
+### 요소 스크롤
+
+스크롤 가능한 요소의 스크롤 위치를 추적하려면 요소의 `ref`를 `useScroll`의 `container` 옵션에 전달할 수 있습니다:
+
+```jsx
+const carouselRef = useRef(null);
+const { scrollX } = useScroll({
+  container: carouselRef,
+});
+
+return (
+  <div ref={carouselRef} style={{ overflow: "scroll" }}>
+    {children}
+  </div>
+);
+```
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-element-scrolling-eg6fm3" />
+
+### 요소 위치
+
+`target` 옵션에 요소의 `ref`를 전달하여 컨테이너 내에서 요소가 이동할 때의 진행 상황을 추적할 수 있습니다.
+
+```jsx
+const ref = useRef(null)
+const { scrollYProgress } = useScroll({
+  target: ref,
+  offset: ["start end", "end end"]
+})
+
+return <div ref={ref}>
+```
+
+이 예제에서 각 항목은 자체 진행 표시기를 가집니다.
+
+<IFrameEmbed sandboxId="framer-motion-track-element-position-wnzctr" />
+
+### 스크롤 오프셋
+
+[`offset` 옵션](/docs/motion-values/use-scroll)을 사용하여 뷰포트와 추적하려는 요소의 어느 부분을 추적할지 정의할 수 있습니다. 예를 들어, 요소가 아래에서 들어오거나 위에서 나갈 때, 또는 전체 뷰포트를 이동할 때를 추적할 수 있습니다.
+
+## API
+
+`useScroll`은 다음 옵션들을 받습니다.
+
+### `container`
+
+**기본값**: 브라우저 창
+
+스크롤 위치를 추적할 스크롤 가능한 컨테이너입니다. 기본적으로 이는 창 뷰포트입니다. 하지만 어떤 스크롤 가능한 요소든 될 수 있습니다.
+
+### `target`
+
+기본적으로 이는 컨테이너의 스크롤 가능한 영역입니다. 추가로 다른 요소로 설정하여 뷰포트 내에서의 진행 상황을 추적할 수 있습니다.
+
+### `axis`
+
+**기본값:** `"y"`
+
+`offset`을 적용할 스크롤 축입니다.
+
+### `offset`
+
+**기본값:** `["start start", "end end"]`
+
+`offset`은 `target`과 `container`가 만나는 교차점을 설명합니다.
+
+예를 들어, `"start end"` 교차점은 추적되는 축에서 **target의 시작**이 **container의 끝**과 만날 때를 의미합니다.
+
+따라서 target이 요소이고 container가 창이며 수직 축을 추적하는 경우, `"start end"`는 **요소의 상단**이 **뷰포트의 하단**과 만나는 지점입니다.
+
+#### 허용되는 교차점
+
+target과 container 지점 모두 다음과 같이 정의될 수 있습니다:
+
+- **숫자:** `0`이 축의 시작을, `1`이 끝을 나타내는 값입니다. 따라서 target의 상단과 container의 중간을 정의하려면 `"0 0.5"`로 정의할 수 있습니다. 이 범위를 벗어난 값도 허용됩니다.
+- **이름:** `"start"`, `"center"`, `"end"`는 각각 `0`, `0.5`, `1`의 명확한 단축어로 사용될 수 있습니다.
+- **픽셀:** `"100px"`, `"-50px"`와 같은 픽셀 값은 target/container의 시작점으로부터의 픽셀 수로 정의됩니다.
+- **퍼센트:** 원시 숫자와 동일하지만 `"0%"`에서 `"100%"`로 표현됩니다.
+- **뷰포트:** `"vh"`와 `"vw"` 단위가 허용됩니다.
+
+## 예시들
+
+### 페이지 스크롤 진행
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-xwdxbt" />
+
+### 스프링 보정
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-with-spring-smoothing-75rw1l" />
+
+### 요소 스크롤 진행
+
+<IFrameEmbed sandboxId="framer-motion-usescroll-element-scrolling-eg6fm3" />
+
+### 요소 위치 추적
+
+<IFrameEmbed sandboxId="framer-motion-track-element-position-wnzctr" />
+
+### 패럴랙스
+
+<IFrameEmbed sandboxId="framer-motion-parallax-i9gwuc" />
+
+### React Three Fiber
+
+<IFrameEmbed sandboxId="framer-motion-3d-usescroll-xibe0t" />
+
+### 스크롤 속도
+
+<IFrameEmbed sandboxId="framer-motion-scroll-velocity-r1dy4u" />
